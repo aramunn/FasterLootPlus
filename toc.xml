@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Addon Author="Chronosis,Chimpy Evans" APIVersion="9" Name="FasterLootPlus" Description=""  Version="1.0.0">
+    <Script Name="FasterLootPlus.lua"/>
+    <Form Name="FasterLootPlus.xml"/>
+    <Script Name="lib/SimpleUtils-1.0.lua"/>
+    <Script Name="FasterLootPlus-Defaults.lua"/>
+    <Script Name="FasterLootPlus-Utils.lua"/>
+    <Script Name="FasterLootPlus-UI.lua"/>
+</Addon>
