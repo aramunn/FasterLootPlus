@@ -49,18 +49,21 @@ local tDefaultState = {
     main = nil,
     ruleList = nil,
     editLootRule = nil,
+    editLootRuleItemType = nil,
     assigneeList = nil,
     editAssignee = nil,
     editRuleSets = nil,
     ruleSets = nil,
     ruleSetList = nil,
     confirmDeleteSet = nil,
-    confirmClearRules = nil
+    confirmClearRules = nil,
+    options = nil
   },
   ruleSetItems = {},     -- Rule Set List Items (Stores Windows)
   ruleItems = {},        -- Rule List Items (Stores Windows)
   assigneeItems = {},    -- Assignee List Items (Stores Windows)
-  currentAssignees = {}  -- List of current Assignees for the item
+  currentAssignees = {}, -- List of current Assignees for the item
+  itemTypeItems = {}
 }
 
 -----------------------------------------------------------------------------------------------
@@ -83,8 +86,8 @@ end
 -- FasterLootPlus Init
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:Init()
-  local bHasConfigureFunction = false
-  local strConfigureButtonText = ""
+  local bHasConfigureFunction = true
+  local strConfigureButtonText = "FasterLootPlus"
   local tDependencies = {
     -- "UnitOrPackageName",
   }
@@ -161,9 +164,10 @@ function FasterLootPlus:OnSlashCommand(cmd, params)
     cprint("FasterLootPlus v" .. self.settings.version)
     cprint("Usage:  /fasterloot <command>")
     cprint("====================================")
-    cprint("   show           Open Filter Window")
+    cprint("   show           Open Rules Window")
     cprint("   debug          Toggle Debug")
     cprint("   debug update   Update the Window")
+    cprint("   reset          Clears All Rules and Sets and Resets")
   end
 end
 

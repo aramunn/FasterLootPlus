@@ -97,13 +97,31 @@ function vardump (tbl, indent)
     formatting = string.rep("  ", indent) .. k .. ": "
     if type(v) == 'table' then
       debug(formatting)
-      tprint(v, indent+1)
+      vardump(v, indent+1)
     elseif type(v) == 'boolean' then
       debug(formatting .. tostring(v))
     else
       debug(formatting .. v)
     end
   end
+end
+
+-- Print contents of `tbl`, with indentation to a string
+-- `indent` sets the initial level of indentation.
+function svardump (tbl, indent)
+  local str = ""
+  if not indent then indent = 0 end
+  for k, v in pairs(tbl) do
+    formatting = string.rep("  ", indent) .. k .. ": "
+    if type(v) == 'table' then
+      str = str .. formatting .. svardump(v, indent+1) .. "\n"
+    elseif type(v) == 'boolean' then
+      str = str .. formatting .. tostring(v) .. "\n"
+    else
+      str = str .. formatting .. v .. "\n"
+    end
+  end
+  return str
 end
 
 Apollo.RegisterPackage(SimpleUtils, S_MAJOR, S_MINOR, {})
