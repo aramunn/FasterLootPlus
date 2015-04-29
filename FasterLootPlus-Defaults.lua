@@ -102,7 +102,6 @@ FasterLootPlus.tItemTypeAggregates = {
 }
 
 FasterLootPlus.tItemTypes = {
-  [-100] = "- Any Type -",
   [-10] = "- Any Recipe -",
   [-9] = "- Any Costume -",
   [-8] = "- Any Armor -",

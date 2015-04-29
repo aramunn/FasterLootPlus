@@ -431,6 +431,10 @@ function FasterLootPlus:PopulateItemTypeDropdown()
   self:DestroyWindowList(self.state.itemTypeItems)
   -- Base Case
   --for key,value in pairs(FasterLootPlus.tItemTypes) do
+  -- Blank first item
+  local wnd = self:CreateDropDownListItem(nil, "")
+  table.insert(self.state.itemTypeItems, wnd)
+  -- Loop through remaining items
   for i = -100, 500, 1 do
     local v = FasterLootPlus.tItemTypes[i]
     if v then
@@ -451,6 +455,7 @@ end
 function FasterLootPlus:OnItemTypeDropDownItemSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
   -- Highlight
   wndHandler:SetSprite("BK3:btnHolo_ListView_MidPressed")
+  self.state.windows.selectedItem = wndHandler
 end
 
 function FasterLootPlus:OnItemTypeDropDownItemEntered( wndHandler, wndControl, x, y )
@@ -462,14 +467,17 @@ function FasterLootPlus:OnItemTypeDropDownItemExited( wndHandler, wndControl, x,
 end
 
 function FasterLootPlus:OnItemTypeDropDownItemSelectedUp( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY )
-  local idx = wndHandler:GetData()
-  local text = wndHandler:GetText()
-  local wnd = self.state.windows.editLootRuleItemType:GetParent()
-  local select = wnd:FindChild("ItemTypeSelection")
-  select:SetCheck(false)
-  select:SetText(text)
-  select:SetData(idx)
-  wnd:FindChild("ItemTypeDropdown"):Show(false)  
+  -- Check that the user hasn't moved out of the selected item.
+  if self.state.windows.selectedItem == wndHandler then
+    local idx = wndHandler:GetData()
+    local text = wndHandler:GetText()
+    local wnd = self.state.windows.editLootRuleItemType:GetParent()
+    local select = wnd:FindChild("ItemTypeSelection")
+    select:SetCheck(false)
+    select:SetText(text)
+    select:SetData(idx)
+    wnd:FindChild("ItemTypeDropdown"):Show(false)
+  end
 end
 
 ---------------------------------------------------------------------------------------------------
