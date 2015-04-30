@@ -270,12 +270,12 @@ function FasterLootPlus:CompareItemType(item, rule)
       -- Loop through all the items
       for key,value in pairs(tAggregate) do
         -- Check if the item type matches one of the aggregate rules
-        if item.type = value then return true end
+        if item.type == value then return true end
       end
       return false
     else
       -- Check if the item type matches one the rule
-      if item.type = rule.itemType then return true end
+      if item.type == rule.itemType then return true end
       return false
     end
   end
@@ -288,7 +288,9 @@ end
 function FasterLootPlus:CompareItemName(item, rule, pattern)
   -- Use Pattern Matching to find the item if pattern mode is on, else use simple matching
   if pattern == true then
+    -- RegExp Match
   else
+    -- Standard Lua Pattern Match
   end
 
   if rule.itemType ~= nil then
@@ -299,12 +301,12 @@ function FasterLootPlus:CompareItemName(item, rule, pattern)
       -- Loop through all the items
       for key,value in pairs(tAggregate) do
         -- Check if the item type matches one of the aggregate rules
-        if item.type = value then return true end
+        if item.type == value then return true end
       end
       return false
     else
       -- Check if the item type matches one the rule
-      if item.type = rule.itemType then return true end
+      if item.type == rule.itemType then return true end
       return false
     end
   end

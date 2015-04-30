@@ -861,8 +861,8 @@ end
 
 local Parser = class()
 
-function Parser:__init__(regexp, flags)
-    self.regexp = regexp
+function Parser:__init__(regex, flags)
+    self.regex = regex
     self.flags  = flags
     self.nextCapture = 1
 
@@ -872,7 +872,7 @@ function Parser:__init__(regexp, flags)
         return
     end
 
-    if nextPos ~= #regexp + 1 then
+    if nextPos ~= #regex + 1 then
         if not self.errMsg then
             self.errMsg = "cannot compile"
             self.errPos = nextPos
@@ -898,7 +898,7 @@ function Parser:GetExpOr(pos)
     if not expOr then return nil end
 
     local expPair
-    while self.regexp:sub(nextPos,nextPos) == '|' do
+    while self.regex:sub(nextPos,nextPos) == '|' do
         expPair, nextPos = self:GetExpPair(nextPos + 1)
         if not expPair then return nil end
 
@@ -940,7 +940,7 @@ function Parser:GetExpRepeat(pos)
         end
 
         local clsExp
-        if self.regexp:sub(nextPos, nextPos) == '?' then
+        if self.regex:sub(nextPos, nextPos) == '?' then
             clsExp = ExpVigorless
             nextPos = nextPos + 1
         else
@@ -956,31 +956,31 @@ function Parser:GetExpRepeat(pos)
 end
 
 function Parser:GetExpPrimary(pos)
-    local regexp = self.regexp
+    local regex = self.regex
 
-    if regexp:sub(pos,pos) == '(' then
+    if regex:sub(pos,pos) == '(' then
         pos = pos+1
 
         local subExp, nextPos
 
-        if regexp:sub(pos,pos) == '?' then
+        if regex:sub(pos,pos) == '?' then
             pos = pos+1
 
-            if regexp:sub(pos,pos) == ':' then
+            if regex:sub(pos,pos) == ':' then
                 subExp, nextPos = self:GetUnnamedGroup(pos+1)
-            elseif regexp:sub(pos,pos+1) == 'P<' then
+            elseif regex:sub(pos,pos+1) == 'P<' then
                 subExp, nextPos = self:GetUserNamedGroup(pos+2)
-            elseif regexp:sub(pos,pos+1) == 'P=' then
+            elseif regex:sub(pos,pos+1) == 'P=' then
                 subExp, nextPos = self:GetUserNamedRef(pos+2)
-            elseif regexp:sub(pos,pos) == '=' then
+            elseif regex:sub(pos,pos) == '=' then
                 subExp, nextPos = self:GetLookAhead(pos+1)
-            elseif regexp:sub(pos,pos) == '!' then
+            elseif regex:sub(pos,pos) == '!' then
                 subExp, nextPos = self:GetNegLookAhead(pos+1)
-            elseif regexp:sub(pos,pos+1) == '<=' then
+            elseif regex:sub(pos,pos+1) == '<=' then
                 subExp, nextPos = self:GetLookBack(pos+2)
-            elseif regexp:sub(pos,pos+1) == '<!' then
+            elseif regex:sub(pos,pos+1) == '<!' then
                 subExp, nextPos = self:GetNegLookBack(pos+2)
-            elseif regexp:sub(pos,pos) == '(' then
+            elseif regex:sub(pos,pos) == '(' then
                 subExp, nextPos = self:GetConditional(pos+1)
             else
                 self.errMsg = "invalid char"
@@ -993,7 +993,7 @@ function Parser:GetExpPrimary(pos)
 
         if not subExp then return nil end
 
-        if self.regexp:sub(nextPos,nextPos) == ')' then
+        if self.regex:sub(nextPos,nextPos) == ')' then
             return subExp, nextPos+1
         else
             self.errMsg = ") expected"
@@ -1028,7 +1028,7 @@ function Parser:GetUserNamedGroup(pos)
     local name, nextPos = self:GetIdentifier(pos)
     if not name then return nil end
 
-    if self.regexp:sub(nextPos,nextPos) ~= '>' then
+    if self.regex:sub(nextPos,nextPos) ~= '>' then
         self.errMsg = "> expected"
         self.errPos = nextPos
         return nil
@@ -1098,7 +1098,7 @@ function Parser:GetConditional(pos)
     local name, nextPos = self:GetName(pos)
     if not name then return nil end
 
-    if self.regexp:sub(nextPos,nextPos) ~= ')' then
+    if self.regex:sub(nextPos,nextPos) ~= ')' then
         self.errMsg = ") expected"
         self.errPos = nextPos
         return nil
@@ -1109,7 +1109,7 @@ function Parser:GetConditional(pos)
     if not exp1 then return nil end
 
     local exp2
-    if self.regexp:sub(nextPos,nextPos) == '|' then
+    if self.regex:sub(nextPos,nextPos) == '|' then
         exp2, nextPos = self:GetExpPair(nextPos + 1)
         if not exp2 then return nil end
     end
@@ -1133,10 +1133,10 @@ function Parser:GetNamedGroup(pos)
 end
 
 function Parser:GetRepeater(pos)
-    local regexp = self.regexp
+    local regex = self.regex
 
-    if pos > #regexp then return nil end
-    local c = regexp:sub(pos, pos)
+    if pos > #regex then return nil end
+    local c = regex:sub(pos, pos)
 
     if c == '*' then
         return {}, pos+1
@@ -1159,7 +1159,7 @@ function Parser:GetRepeater(pos)
         pos = nextPos
     end
 
-    c = regexp:sub(pos, pos)
+    c = regex:sub(pos, pos)
     if c == '' or (c ~= ',' and c ~= '}') then
         self.errMsg = ", or } expected"
         self.errPos = pos
@@ -1180,7 +1180,7 @@ function Parser:GetRepeater(pos)
             pos = nextPos
         end
 
-        c = regexp:sub(pos, pos)
+        c = regex:sub(pos, pos)
         if c == '' or c ~= '}' then
             self.errMsg = "} expected"
             self.errPos = pos
@@ -1196,15 +1196,15 @@ function Parser:GetRepeater(pos)
 end
 
 function Parser:GetCharClass(pos)
-    local regexp = self.regexp
-    if regexp:sub(pos,pos) ~= '[' then
+    local regex = self.regex
+    if regex:sub(pos,pos) ~= '[' then
         return nil
     end
 
     pos = pos+1
 
     local affirmative
-    if regexp:sub(pos,pos) == '^' then
+    if regex:sub(pos,pos) == '^' then
         affirmative = false
         pos = pos+1
     else
@@ -1214,7 +1214,7 @@ function Parser:GetCharClass(pos)
     local fnIsMatch, nextPos = self:GetUserCharClass(pos)
     if not fnIsMatch then return nil end
 
-    if regexp:sub(nextPos,nextPos) ~= ']' then
+    if regex:sub(nextPos,nextPos) ~= ']' then
         self.errMsg = "] expected"
         self.errPos = nextPos
         return nil
@@ -1263,7 +1263,7 @@ function Parser:GetUserCharRange(pos)
     local char1, nextPos = self:GetUserChar(pos)
     if not char1 then return nil end
 
-    if self.regexp:sub(nextPos,nextPos) ~= '-' then
+    if self.regex:sub(nextPos,nextPos) ~= '-' then
         return function(c) return c == char1 end, nextPos
     end
 
@@ -1284,7 +1284,7 @@ function Parser:GetUserChar(pos)
         return value, nextPos
     end
 
-    local c = self.regexp:sub(pos, pos)
+    local c = self.regex:sub(pos, pos)
     if c ~= '' and c ~= '\\' and c ~= ']' then
         return c:byte(), pos + 1
     else
@@ -1298,7 +1298,7 @@ function Parser:GetClassEscSeq(pos)
         return value, nextPos
     end
 
-    if self.regexp:sub(pos,pos+1) == "\\b" then
+    if self.regex:sub(pos,pos+1) == "\\b" then
         return 0x08, pos+2
     else
         return nil
@@ -1306,8 +1306,8 @@ function Parser:GetClassEscSeq(pos)
 end
 
 function Parser:GetNonTerminal(pos)
-    local regexp = self.regexp
-    local c = regexp:sub(pos,pos)
+    local regex = self.regex
+    local c = regex:sub(pos,pos)
     if c == '^' then
         return new(ExpLineBegin), pos+1
     end
@@ -1325,7 +1325,7 @@ function Parser:GetNonTerminal(pos)
     local zero, nine, A, Z, a, z, ubar = ("09AZaz_"):byte(1,7)
     local ff, nl, cr, ht, vt, ws = ("\f\n\r\t\v "):byte(1,6)
 
-    c = regexp:sub(pos+1, pos+1)
+    c = regex:sub(pos+1, pos+1)
     if c == 'd' then
         local fn = function(c) return zero <= c and c <= nine end
         return new(ExpOneChar, fn), pos+2
@@ -1405,7 +1405,7 @@ function Parser:GetTerminalStr(pos)
         value, nextPos = self:GetTerminal(pos)
         if not value then
             local exp = new(ExpTerminals,
-                self.regexp.char(unpack(list))
+                self.regex.char(unpack(list))
             )
             return exp, pos
         end
@@ -1436,7 +1436,7 @@ function Parser:GetTerminal(pos)
         return value, nextPos
     end
 
-    value = self.regexp:byte(pos,pos)
+    value = self.regex:byte(pos,pos)
     if not value then return nil end
 
     local nonTerminal = g_nonTerminal_Parser_GetTerminal
@@ -1486,11 +1486,11 @@ local g_entity_Parser_GetTermEscSeq = {
     [('~'):byte()] = ('~'):byte(),
 }
 function Parser:GetTermEscSeq(pos)
-    local regexp = self.regexp
-    if regexp:sub(pos,pos) ~= '\\' then return nil end
+    local regex = self.regex
+    if regex:sub(pos,pos) ~= '\\' then return nil end
 
     local entity = g_entity_Parser_GetTermEscSeq
-    local c = regexp:byte(pos+1)
+    local c = regex:byte(pos+1)
     local value = entity[c]
     if value then
         return value, pos+2
@@ -1527,11 +1527,11 @@ function Parser:GetName(pos)
 end
 
 function Parser:GetIdentifier(pos)
-    local regexp = self.regexp
+    local regex = self.regex
     local zero, nine, A, Z, a, z, bar = ('09AZaz_'):byte(1,7)
 
     local value
-    local c = regexp:byte(pos)
+    local c = regex:byte(pos)
     if not c then return nil end
 
     if (A <= c and c <= Z)
@@ -1545,7 +1545,7 @@ function Parser:GetIdentifier(pos)
 
     local nextPos = pos + 1
     while true do
-        c = regexp:byte(nextPos)
+        c = regex:byte(nextPos)
         if not c then
             break
         end
@@ -1561,17 +1561,17 @@ function Parser:GetIdentifier(pos)
         end
     end
 
-    return regexp.char(unpack(value)), nextPos
+    return regex.char(unpack(value)), nextPos
 end
 
 function Parser:GetNumber(pos)
-    local regexp = self.regexp
+    local regex = self.regex
     local zero, nine = ('09'):byte(1,2)
 
     local nextPos = pos
     local value  = 0
     while true do
-        local digit = regexp:byte(nextPos)
+        local digit = regex:byte(nextPos)
         if not digit then
             break
         end
@@ -1588,14 +1588,14 @@ function Parser:GetNumber(pos)
 end
 
 function Parser:GetHexNumber(pos, maxDigits)
-    local regexp = self.regexp
+    local regex = self.regex
     local zero, nine, A, F, a, f = ('09AFaf'):byte(1,6)
 
     local nextPos = pos
     local value  = 0
     local i = 0
     while not maxDigits or i < maxDigits do
-        local digit = regexp:byte(nextPos)
+        local digit = regex:byte(nextPos)
         if not digit then
             break
         end
@@ -1677,8 +1677,8 @@ end
 local Regex = class()
 Regex.__regex__ = true -- type marker
 
-function Regex:__init__(regexp, flags)
-    local parser = new(Parser, regexp, flags)
+function Regex:__init__(regex, flags)
+    local parser = new(Parser, regex, flags)
     local exp = parser:Expression()
     if exp == nil then
         msg, pos = parser:Error()
@@ -1845,50 +1845,50 @@ function Match:expand(format)
 end
 
 -- Main RegExp class
-function RegExp.compile(regexp, flags)
-    return new(Regex, regexp, flags)
+function RegExp.compile(regex, flags)
+    return new(Regex, regex, flags)
 end
 
-function RegExp.match(regexp, str, pos, flags)
-    return self.__getRegex(regexp, flags):match(str, pos)
+function RegExp.match(regex, str, pos, flags)
+    return self.__getRegex(regex, flags):match(str, pos)
 end
 
-function RegExp.search(regexp, str, pos, flags)
-    return self.__getRegex(regexp, flags):search(str, pos)
+function RegExp.search(regex, str, pos, flags)
+    return self.__getRegex(regex, flags):search(str, pos)
 end
 
-function RegExp.sub(regexp, repl, str, count, flags)
-    return self.__getRegex(regexp, flags):sub(repl, str, count)
+function RegExp.sub(regex, repl, str, count, flags)
+    return self.__getRegex(regex, flags):sub(repl, str, count)
 end
 
-function RegExp.findall(regexp, str, pos, flags)
-    return self.__getRegex(regexp, flags):findall(str, pos)
+function RegExp.findall(regex, str, pos, flags)
+    return self.__getRegex(regex, flags):findall(str, pos)
 end
 
-function RegExp.finditer(regexp, str, pos, flags)
-    return self.__getRegex(regexp, flags):finditer(str, pos)
+function RegExp.finditer(regex, str, pos, flags)
+    return self.__getRegex(regex, flags):finditer(str, pos)
 end
 
-function RegExp.__getRegex(regexp, flags)
-    if regexp.__regex__ then
-        return regexp
+function RegExp.__getRegex(regex, flags)
+    if regex.__regex__ then
+        return regex
     else
-        return self.__compile(regexp, flags)
+        return self.__compile(regex, flags)
     end
 end
 
-function RegExp.__compile(regexp, flags)
+function RegExp.__compile(regex, flags)
     local sourceCache = g_sourceCache_re
     local objectCache = g_objectCache_re
 
-    local obj = objectCache[regexp]
+    local obj = objectCache[regex]
     if obj then
         -- flags must be considered:
         -- anyway, flags does not work for now
 
         local theI = 0
         for i,v in ipairs(sourceCache) do
-            if v == regexp then
+            if v == regex then
                 theI = i
                 break
             end
@@ -1897,12 +1897,12 @@ function RegExp.__compile(regexp, flags)
             for i = theI, 2, -1  do
                 sourceCache[i] = sourceCache[i-1]
             end
-            sourceCache[1] = regexp
+            sourceCache[1] = regex
         end
         return obj
     end
 
-    obj = self.compile(regexp, flags)
+    obj = self.compile(regex, flags)
     local cacheSize = self.cacheSize
 
     local size = #sourceCache
@@ -1913,8 +1913,8 @@ function RegExp.__compile(regexp, flags)
         size = size - 1
     end
 
-    table.insert(sourceCache, 1, regexp)
-    objectCache[regexp] = obj
+    table.insert(sourceCache, 1, regex)
+    objectCache[regex] = obj
 
     return obj
 end
