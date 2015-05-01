@@ -84,12 +84,14 @@ function FasterLootPlus:CloseMain()
   end
 end
 
-function FasterLootPlus:OnToggleRuleSetWindow()
-  if self.state.isRuleSetOpen == true then
-    self.state.isRuleSetOpen = false
+function FasterLootPlus:OnToggleRuleSetWindow( wndHandler, wndControl, eMouseButton )
+  local checked = wndControl:IsChecked()
+  if checked then
+    wndControl:SetText("<")
   else
-    self.state.isRuleSetOpen = true
+    wndControl:SetText(">")
   end
+  self.state.isRuleSetOpen = checked
   self.state.windows.ruleSets:Show(self.state.isRuleSetOpen)
 end
 
@@ -225,6 +227,12 @@ function FasterLootPlus:OnLootRuleSelected( wndHandler, wndControl, eMouseButton
     self:CreateEditLootRuleWindow( wndHandler )
   end
 end
+
+function FasterLootPlus:OnEditLootRule( wndHandler, wndControl, eMouseButton )
+  local par = wndHandler:GetParent()
+  self:CreateEditLootRuleWindow( par )
+end
+
 
 function FasterLootPlus:OnDeleteLootRule( wndHandler, wndControl, eMouseButton )
   local par = wndHandler:GetParent()
@@ -432,21 +440,21 @@ function FasterLootPlus:PopulateItemTypeDropdown()
   -- Base Case
   --for key,value in pairs(FasterLootPlus.tItemTypes) do
   -- Blank first item
-  local wnd = self:CreateDropDownListItem(nil, "")
+  local wnd = self:CreateDownListItem(nil, "", "ItemTypeDropDownListItem", self.state.windows.editLootRuleItemType)
   table.insert(self.state.itemTypeItems, wnd)
   -- Loop through remaining items
   for i = -100, 500, 1 do
     local v = FasterLootPlus.tItemTypes[i]
     if v then
-      local wnd = self:CreateDropDownListItem(i, v)
+      local wnd = self:CreateDownListItem(i, v, "ItemTypeDropDownListItem", self.state.windows.editLootRuleItemType)
       table.insert(self.state.itemTypeItems, wnd)
     end
   end
   self.state.windows.editLootRuleItemType:ArrangeChildrenVert()
 end
 
-function FasterLootPlus:CreateDropDownListItem(key, value)
-  local wnd = Apollo.LoadForm(self.xmlDoc, "ItemTypeDropDownListItem", self.state.windows.editLootRuleItemType, self)
+function FasterLootPlus:CreateDownListItem(key, value, itemType, dest)
+  local wnd = Apollo.LoadForm(self.xmlDoc, itemType, dest, self)
   wnd:SetText(value)
   wnd:SetData(key)
   return wnd

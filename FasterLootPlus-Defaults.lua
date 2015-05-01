@@ -23,10 +23,16 @@ local tBaseRuleSet = {
 local tBaseLootRule = {
   label = "",
   itemName = "",
-  itemType = 0,
+  itemType = nil,
+  itemQuality = nil,
+  itemLevel = {
+    compareOp = nil,
+    level = nil
+  },
   randomAssign = false,
   patternMatch = false,
-  assignees = {}
+  assignees = {},
+  enabled = false
 }
 
 local tDefaultLootRules = {
@@ -235,6 +241,88 @@ FasterLootPlus.tItemTypes = {
   [489] = "Token - Light Armor - Head",
   [490] = "Token - Light Armor - Shoulder",
   [491] = "Token - Light Armor - Chest"
+}
+
+FasterLootPlus.tComparisonOps = {
+  ["eq"] = "=",
+  ["gte"] = "≥",
+  ["gt"] = ">",
+  ["lte"] = "≤",
+  ["lt"] = "<",
+  ["neq"] = "≠"
+}
+
+FasterLootPlus.tItemQuality = {
+  [Item.CodeEnumItemQuality.Inferior] = {
+    Abbreviation  = "Infr",
+    Name          = "Inferior",
+    Color			    = "ItemQuality_Inferior",
+    BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Silver",
+    HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Silver",
+    SquareSprite	= "BK3:UI_BK3_ItemQualityGrey",
+    CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetGrey",
+    NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Silver",
+  },
+  [Item.CodeEnumItemQuality.Average] = {
+    Abbreviation  = "Avrg",
+    Name			    = "Average",
+    Color		   	  = "ItemQuality_Average",
+    BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_White",
+    HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_White",
+    SquareSprite	= "BK3:UI_BK3_ItemQualityWhite",
+    CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetWhite",
+    NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_White",
+  },
+  [Item.CodeEnumItemQuality.Good]	= {
+    Abbreviation  = "Good",
+    Name    			= "Good",
+    Color 		   	= "ItemQuality_Good",
+    BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Green",
+    HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Green",
+    SquareSprite	= "BK3:UI_BK3_ItemQualityGreen",
+    CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetGreen",
+    NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Green",
+  },
+  [Item.CodeEnumItemQuality.Excellent] = {
+    Abbreviation  = "Exlt",
+    Name    			= "Excellent",
+    Color 		   	= "ItemQuality_Excellent",
+    BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Blue",
+    HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Blue",
+    SquareSprite	= "BK3:UI_BK3_ItemQualityBlue",
+    CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetBlue",
+    NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Blue",
+  },
+  [Item.CodeEnumItemQuality.Superb] = {
+    Abbreviation  = "Sprb",
+    Name    			= "Superb",
+    Color 		   	= "ItemQuality_Superb",
+    BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Purple",
+    HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Purple",
+    SquareSprite	= "BK3:UI_BK3_ItemQualityPurple",
+    CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetPurple",
+    NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Purple",
+  },
+  [Item.CodeEnumItemQuality.Legendary] = {
+    Abbreviation  = "Lgnd",
+    Name    			= "Legendary",
+    Color 		   	= "ItemQuality_Legendary",
+    BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Orange",
+    HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Orange",
+    SquareSprite	= "BK3:UI_BK3_ItemQualityOrange",
+    CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetOrange",
+    NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Orange",
+  },
+  [Item.CodeEnumItemQuality.Artifact] = {
+    Abbreviation  = "Artf",
+    Name    			= "Artifact",
+    Color 		   	= "ItemQuality_Artifact",
+    BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Pink",
+    HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Pink",
+    SquareSprite	= "BK3:UI_BK3_ItemQualityMagenta",
+    CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetPink",
+    NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Pink",
+  }
 }
 
 function FasterLootPlus:LoadDefaultLootRules()
