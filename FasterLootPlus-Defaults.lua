@@ -29,6 +29,7 @@ local tBaseLootRule = {
     compareOp = nil,
     level = nil
   },
+  mode = "",
   randomAssign = false,
   patternMatch = false,
   assignees = {},
@@ -201,6 +202,8 @@ FasterLootPlus.tItemTypes = {
   [298] = "Weapon Attachment",
   [299] = "Support System",
   [301] = "Implant",
+  [321] = "Technologist Catalyst",
+  [322] = "Cooking Catalyst",
   [326] = "Farming - No Commodity",
   [328] = "Medishot",
   [329] = "Boost",
@@ -232,6 +235,7 @@ FasterLootPlus.tItemTypes = {
   [408] = "Attribute Rune",
   [414] = "Class Rune Sets",
   [423] = "Elder Rune Sets",
+  [428] = "Attribute Rune",
   [450] = "Dye Loot Bag",
   [455] = "Nexus Nourishments",
   [465] = "Runic Flux",
@@ -246,9 +250,9 @@ FasterLootPlus.tItemTypes = {
 FasterLootPlus.tComparisonOps = {
   ["eq"] = "=",
   ["gte"] = "≥",
-  ["gt"] = ">",
+  ["gt"] = "˃",
   ["lte"] = "≤",
-  ["lt"] = "<",
+  ["lt"] = "˂",
   ["neq"] = "≠"
 }
 

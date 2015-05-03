@@ -1,0 +1,35 @@
+-- Returns Table of Masterloot items
+GatherMasterLoot
+
+-- Called whenever an item enter the masterloot queue
+OnMasterLootUpdate
++ GatherMasterLoot
++ Loops through each item from the Gather
+- DesignatedLooterForItemDrop for item (return looter or nil)
+- if isn't nil then assign loot
+- if is nil, check if should be randomed, if it should random it out to one of the desginated looters.
+- else skip the item
+
+-- Called as to find if the item has a designated looter
+-- Iterate through the designated looter table, seeing if an entry exists for this item
+-- If we find a match, check to see if the looter we want is available.
+DesignatedLooterForItemDrop
+
+
+-- Given an item name, check it against the matches in the designated looter list
+-- Returns the looter's name if a match is found
+GetDesignatedLooter
+
+
+-- Checks if the item should be randomed to determine if it's interesting.
+-- Returns true/false
+
+ItemDropShouldBeRandomed
+- Check that the item doesn't have a designated looted if it does return false
+- Check the whitelist, if the item is on the whitelist, return true
+- If the item quality is purple/orange/pink return false
+- If the item effective level is above 55 return false
+- Check item against hardcoded do not randomize list, return false
+-- "Eldan Runic Module", "Suspended Biophage Cluster", contains("Archivos"), contains("Warplot Boss"), matches("Sign of %a+ - Eldan"), contains("Ground Mount"), contains("Hoverboard Mount")
+- If Decor or Improvement return false
+- Otherwise, return true

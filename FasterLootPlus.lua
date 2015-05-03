@@ -45,11 +45,13 @@ local tDefaultSettings = {
 local tDefaultState = {
   isOpen = false,
   isRuleSetOpen = false,
-  windows = {
+  windows = {           -- These store windows for lists
     main = nil,
     ruleList = nil,
     editLootRule = nil,
     editLootRuleItemType = nil,
+    editLootRuleQualityType = nil,
+    editLootRuleILvlComparisonType = nil,
     assigneeList = nil,
     editAssignee = nil,
     editRuleSets = nil,
@@ -60,11 +62,23 @@ local tDefaultState = {
     options = nil,
     selectedItem = nil
   },
+  listItems = {         -- These store windows for lists
+    itemTypes = {},
+    itemQualities = {},
+    itemLevelComparitors = {},
+    ruleSets = {},
+    rules = {},
+    assignees = {}
+  },
+  buttons = {
+    editRuleIncILvlHeld = false,
+    editRuleDecILvlHeld = false
+  },
   ruleSetItems = {},     -- Rule Set List Items (Stores Windows)
   ruleItems = {},        -- Rule List Items (Stores Windows)
   assigneeItems = {},    -- Assignee List Items (Stores Windows)
   currentAssignees = {}, -- List of current Assignees for the item
-  itemTypeItems = {}
+  --itemTypeItems = {}
 }
 
 -----------------------------------------------------------------------------------------------
@@ -237,20 +251,9 @@ function FasterLootPlus:OnMasterLootUpdate(bForceOpen)
   local tMasterLootList = self:GatherMasterLoot()
 
   if self.setting.user.isEnabled then
-    -- Check each item against the filter, and then random the ones that pass
+    -- Check each item against each rule filter
     for idxMasterItem, tCurMasterLoot in pairs(tMasterLootList) do
-      -- -- Prioritize designated looters first.
-      -- tDesignatedLooter = self:DesignatedLooterForItemDrop(tCurMasterLoot)
-      -- if tDesignatedLooter ~= nil then
-      --   self:AssignLoot(tCurMasterLoot.nLootId, tDesignatedLooter, tCurMasterLoot.itemDrop, "Assigned")
-      -- -- Check to see if we can just random the item out
-      -- elseif self:ItemDropShouldBeRandomed(tCurMasterLoot) then
-      --   local randomLooter = self:GetRandomLooter(tCurMasterLoot.tLooters)
-      --   self:AssignLoot(tCurMasterLoot.nLootId, randomLooter, tCurMasterLoot.itemDrop, "Assigned")
-      -- -- Otherwise, drop it to the master loot window
-      -- else
-      --   self:PrintDB("Not assigning " .. tCurMasterLoot.itemDrop:GetName())
-      -- end
+      self:ProcessItem(tCurMasterLoot)
     end
   end
 
@@ -283,142 +286,93 @@ function FasterLootPlus:CompareItemType(item, rule)
 end
 
 -----------------------------------------------------------------------------------------------
--- FasterLootPlus CompareItemType
+-- FasterLootPlus CompareItemName
 -----------------------------------------------------------------------------------------------
-function FasterLootPlus:CompareItemName(item, rule, pattern)
-  -- Use Pattern Matching to find the item if pattern mode is on, else use simple matching
-  if pattern == true then
-    -- RegExp Match
-  else
-    -- Standard Lua Pattern Match
-  end
-
-  if rule.itemType ~= nil then
-    -- Check if the rule is an aggregate type
-    if rule.itemType < 0 then
-      -- Get the Aggregate Rules Table
-      local tAggregate = tItemTypeAggregates[rule.itemType]
-      -- Loop through all the items
-      for key,value in pairs(tAggregate) do
-        -- Check if the item type matches one of the aggregate rules
-        if item.type == value then return true end
-      end
+function FasterLootPlus:CompareItemName(item, rule)
+  if rule.itemName ~= nil then
+    -- Use Pattern Matching to find the item if pattern mode is on, else use simple matching
+    if rule.patternMatch == true then
+      -- RegExp Match
+      local regex = RegExp.compile(rule.itemName)
+      local find = regex:search(item.name)
+      if find then return true end
       return false
     else
-      -- Check if the item type matches one the rule
-      if item.type == rule.itemType then return true end
-      return false
+      -- Standard Lua Pattern Match
+      return string.match(item.name, rule.itemName)
     end
   end
   return true
 end
 
 -----------------------------------------------------------------------------------------------
--- FasterLootPlus DesignatedLooterForItemDrop
+-- FasterLootPlus CompareItemQuality
 -----------------------------------------------------------------------------------------------
--- -- Allow some items to go directly to some people
--- function FasterLootPlus:DesignatedLooterForItemDrop(tMasterLoot)
---   strItemName = tMasterLoot.itemDrop:GetName()
---   self:PrintDB("Entering to check designated loot for" .. strItemName)
---   -- Iterate through the designated looter table, seeing if an entry exists for this item
---   -- If we find a match, check to see if the looter we want is available.
---   strDesignatedLooterName = self:GetDesignatedLooter(strItemName)
---   if strDesignatedLooterName ~= nil then
---     self:PrintDB("It is designated loot. Is the looter " .. strDesignatedLooterName .. " available?")
---     for _, unitCurLooter in pairs(tMasterLoot.tLooters) do
---       strCurLooterName = unitCurLooter:GetName()
---       self:PrintDB("Checking " .. strCurLooterName)
---       if strDesignatedLooterName == strCurLooterName then
---         self:PrintDB("Yes! Give it out!")
---         return unitCurLooter
---       else
---         self:PrintDB("No!")
---       end
---     end
---     self:PrintDB("No designated looter available")
---   else
---     self:PrintDB("Not designated loot")
---   end
---
---   return nil
--- end
+function FasterLootPlus:CompareItemQuality(item, rule)
+  if rule.itemQuality ~= nil then
+    if item.quality ~= rule.itemQuality then return false end
+  end
+  return true
+end
 
 -----------------------------------------------------------------------------------------------
--- FasterLootPlus GetDesignatedLooter
+-- FasterLootPlus CompareItemLevel
 -----------------------------------------------------------------------------------------------
--- -- Given an item name, check it against the matches in the designated looter list
--- -- Returns the looter's name if a match is found
--- -- TODO: Multiple designated looters for backups?
--- function FasterLootPlus:GetDesignatedLooter(strItemName)
---   for strDesignatedMatch, strDesignatedLooter in pairs(tDesignatedLooters) do
---     if string.match(strItemName, strDesignatedMatch) then
---       return strDesignatedLooter
---     end
---   end
---   return nil
--- end
+function FasterLootPlus:CompareItemLevel(item, rule)
+  local iLvl = item.nEffectiveLevel
+  return self:CompareOp(rule.itemLevel.compareOp, iLvl, tonumber(rule.itemLevel.level))
+end
 
 -----------------------------------------------------------------------------------------------
--- FasterLootPlus GetDesignatedLooter
+-- FasterLootPlus CheckItem
 -----------------------------------------------------------------------------------------------
--- -- Filter oracle function used to determine if one particular item should
--- -- be randomed to a valid looter.
--- function FasterLootPlus:ItemDropShouldBeRandomed(tMasterLoot)
---   -- Designated loot should never be randomed
---   strItemName = tMasterLoot.itemDrop:GetName()
---   if self:GetDesignatedLooter(strItemName) ~= nil then
---     self:PrintDB("Designated loot should never be randomed")
---     return false
---   end
---
---   tDetailedInfo = tMasterLoot.itemDrop:GetDetailedInfo().tPrimary
---   enumItemQuality = tMasterLoot.itemDrop:GetItemQuality()
---   strItemType = tMasterLoot.itemDrop:GetItemTypeName()
---
---   --for key, val in pairs(tDetailedInfo) do
---   --  self:PrintDB(key .. " => " .. tostring(val))
---   --end
---
---   -- White list items are ALWAYS randomed...
---   if tWhiteList[strItemName] ~= nil then
---     return true
---   end
---
---   -- Purples/Orange/Pinks are currently always interesting
---   if enumItemQuality == Item.CodeEnumItemQuality.Superb or
---      enumItemQuality == Item.CodeEnumItemQuality.Legendary or
---      enumItemQuality == Item.CodeEnumItemQuality.Artifact then
---     self:PrintDB("Can't random " .. strItemName .. " because of quality")
---     return false
---   end
---
---   -- If the item level is below an item level threshold
---   if tDetailedInfo.nEffectiveLevel > 55 then
---     self:PrintDB("Can't random " .. strItemName .. " because of ilvl")
---     return false
---   end
---
---   -- Various desirable items
---   if strItemName == "Eldan Runic Module" or
---      strItemName == "Suspended Biophage Cluster" or
---      string.find(strItemName, "Archivos") or
---      string.find(strItemName, "Warplot Boss") or
---      string.match(strItemName, "Sign of %a+ - Eldan") or
---      string.find(strItemName, "Ground Mount") or
---      string.find(strItemName, "Hoverboard Mount") then
---     self:PrintDB("Can't random " .. strItemName .. " because of name")
---     return false
---   end
---
---   -- Why do people care about these?
---   if strItemType == "Decor" or
---      strItemType == "Improvement" then
---     self:PrintDB("Can't random " .. strItemName .. " because of type")
---     return false
---   end
---
---   return true
--- end
+function FasterLootPlus:ProcessItem(loot)
+  local current = self.settings.currentRuleSet
+  local item = loot.itemDrop
+  for idx,rule in ipairs(self.settings.ruleSets[current]) do
+    -- Only check the rule if it is enabled
+    if rule.enabled == true then
+      -- Compares Item to all filter criteria
+      local check = self:CompareItemType(item,rule) and self:CompareItemName(item,rule) and self:CompareItemQuality(item,rule) and self:CompareItemLevel(item,rule)
+      -- The item meets the filter criteria, lets do something and return
+      if check == true then
+        -- Do something with the item and exit
+        local looters = self:GetPossibleLooters(loot.tLooters, rule.assignees)
+
+        if rule.randomAssign == true and #looters <= 0 then
+          -- No looters and random, random out the item
+          self:AssignLoot(loot.nLootId, self:GetRandomLooter(loot.tLooters), item, "Random")
+        elseif rule.randomAssign == true and #looters > 0 then
+          -- Looters and random, random out to one of the designated looters
+          self:AssignLoot(loot.nLootId, self:GetRandomLooter(looters), item, "Random-Assigned")
+        elseif rule.randomAssign == true and #looters > 0 then
+          -- Not random but looters assigned, assign to first priority looter
+          self:AssignLoot(loot.nLootId, looters[1], item, "Assigned")
+        else
+          -- Not random and no assignee available, skip
+          self:PrintDB("Item (" .. item:GetName() .. ") found to assign, but no assignee available.")
+        end
+        -- We only want to process an item exactly once, so we must return
+        return
+      end
+    end
+  end
+end
+
+-----------------------------------------------------------------------------------------------
+-- FasterLootPlus GetLooters
+-----------------------------------------------------------------------------------------------
+function FasterLootPlus:GetPossibleLooters(availableLooters, assignees)
+  local looters = {}
+  for idx,looter in ipairs(availableLooters) do
+    for idx,assignee in ipairs(assignees) do
+      if looter:GetName() == assignee then
+        table.insert(looters,looter:GetName())
+      end
+    end
+  end
+  return looters
+end
 
 -----------------------------------------------------------------------------------------------
 -- Save/Restore functionality

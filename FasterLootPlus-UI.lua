@@ -17,44 +17,6 @@ require "GameLib"
 local FasterLootPlus = Apollo.GetAddon("FasterLootPlus")
 local Info = Apollo.GetAddonInfo("FasterLootPlus")
 
------------------------------------------------------------------------------------------------
--- FasterLootPlus OnConfigure
------------------------------------------------------------------------------------------------
-function FasterLootPlus:OnConfigure()
-  if self.state.windows.options == nil then
-    self.state.windows.options = Apollo.LoadForm(self.xmlDoc, "FasterLootPlusOptionsWindow", nil, self)
-    self.state.windows.options:Show(true)
-  end
-  self.state.windows.options:ToFront()
-end
-
------------------------------------------------------------------------------------------------
--- FasterLootPlus Configuration UI Functions
------------------------------------------------------------------------------------------------
-
-function FasterLootPlus:OnOptionsSave( wndHandler, wndControl, eMouseButton )
-  --local label = self.state.windows.options:FindChild("RuleSetName"):FindChild("Text"):GetText()
-  --local item = shallowcopy(self:GetBaseRuleSet())
-  --item.label = label
-
-  self:CloseOptions()
-end
-
-function FasterLootPlus:OnOptionsCancel( wndHandler, wndControl, eMouseButton )
-  self:CloseOptions()
-end
-
-function FasterLootPlus:OnOptionsClosed( wndHandler, wndControl )
-  self:CloseOptions()
-end
-
-function FasterLootPlus:CloseOptions()
-  self.state.windows.options:Show(false)
-  self.state.windows.options:Destroy()
-  self.state.windows.options = nil
-end
-
-
 ---------------------------------------------------------------------------------------------------
 -- FasterLootPlus General UI Functions
 ---------------------------------------------------------------------------------------------------
@@ -87,9 +49,9 @@ end
 function FasterLootPlus:OnToggleRuleSetWindow( wndHandler, wndControl, eMouseButton )
   local checked = wndControl:IsChecked()
   if checked then
-    wndControl:SetText("<")
+    wndControl:SetText("˂˂˂")
   else
-    wndControl:SetText(">")
+    wndControl:SetText("˃˃˃")
   end
   self.state.isRuleSetOpen = checked
   self.state.windows.ruleSets:Show(self.state.isRuleSetOpen)
@@ -183,9 +145,13 @@ function FasterLootPlus:CreateEditLootRuleWindow( wndHandler )
     self.state.windows.editLootRule:Show(true)
     self.state.windows.assigneeList = self.state.windows.editLootRule:FindChild("ItemList")
     self.state.windows.editLootRuleItemType = self.state.windows.editLootRule:FindChild("ItemType"):FindChild("ItemTypeDropdown")
+    self.state.windows.editLootRuleQualityType = self.state.windows.editLootRule:FindChild("ItemQuality"):FindChild("QualityDropdown")
+    self.state.windows.editLootRuleILvlComparisonType = self.state.windows.editLootRule:FindChild("ItemLevel"):FindChild("ItemLevelComparerDropdown")
     self.state.currentAssignees = {}
     -- Add all list items to the dropdown
     self:PopulateItemTypeDropdown()
+    self:PopulateQualityDropdown()
+    self:PopulateILevelCompareDropdown()
 
     --local eventData = svardump(Item.CodeEnumItemType)
     --self.state.windows.editLootRule:FindChild("CopyToClip"):SetActionData(GameLib.CodeEnumConfirmButtonType.CopyToClipboard, eventData )
@@ -202,10 +168,30 @@ function FasterLootPlus:CreateEditLootRuleWindow( wndHandler )
       self.state.windows.editLootRule:FindChild("ItemName"):FindChild("Text"):SetText(item.itemName)
       self.state.windows.editLootRule:FindChild("ItemType"):FindChild("ItemTypeSelection"):SetData(item.itemType)
       self.state.windows.editLootRule:FindChild("ItemType"):FindChild("ItemTypeSelection"):SetText(self.tItemTypes[item.itemType])
-      self.state.windows.editLootRule:FindChild("PatternMatchingCheckButton"):FindChild("Button"):SetCheck(item.randomAssign)
-      self.state.windows.editLootRule:FindChild("RandomAssignCheckButton"):FindChild("Button"):SetCheck(item.patternMatch)
+      self.state.windows.editLootRule:FindChild("ItemQuality"):FindChild("QualityTypeSelection"):SetData(item.itemQuality)
+      if item.itemQuality ~= nil then
+        self.state.windows.editLootRule:FindChild("ItemQuality"):FindChild("QualityTypeSelection"):SetText(self.tItemQuality[item.itemQuality].Name)
+        self.state.windows.editLootRule:FindChild("ItemQuality"):FindChild("QualityTypeSelection"):SetNormalTextColor(ApolloColor.new(self.tItemQuality[item.itemQuality].Color))
+      else
+        self.state.windows.editLootRule:FindChild("ItemQuality"):FindChild("QualityTypeSelection"):SetText("")
+      end
+      self.state.windows.editLootRule:FindChild("ItemLevel"):FindChild("ItemLevelComparerSelection"):SetData(item.itemLevel.compareOp)
+      if item.itemLevel.compareOp ~= nil then
+        self.state.windows.editLootRule:FindChild("ItemLevel"):FindChild("ItemLevelComparerSelection"):SetText(self.tComparisonOps[item.itemLevel.compareOp])
+      else
+        self.state.windows.editLootRule:FindChild("ItemLevel"):FindChild("ItemLevelComparerSelection"):SetText("")
+      end
+      if item.itemLevel.level ~= nil then
+        self.state.windows.editLootRule:FindChild("ItemLevel"):FindChild("Text"):SetText(item.itemLevel.level)
+      else
+        self.state.windows.editLootRule:FindChild("ItemLevel"):FindChild("Text"):SetText("0")
+      end
+      self.state.windows.editLootRule:FindChild("RandomAssignCheckButton"):FindChild("Button"):SetCheck(item.randomAssign)
+      self.state.windows.editLootRule:FindChild("PatternMatchingCheckButton"):FindChild("Button"):SetCheck(item.patternMatch)
+      self.state.windows.editLootRule:FindChild("EnabledCheckButton"):FindChild("Button"):SetCheck(item.enabled)
+
       -- Need to loop through and add each assignee
-      for idx,value in pairs(item.assignees) do
+      for idx,value in ipairs(item.assignees) do
         table.insert(self.state.currentAssignees, value)
       end
       self:RebuildAssigneeItems()
@@ -242,102 +228,40 @@ function FasterLootPlus:OnDeleteLootRule( wndHandler, wndControl, eMouseButton )
   self:RebuildLootRuleItems()
 end
 
----------------------------------------------------------------------------------------------------
--- FasterLootPlus RuleSet UI Functions
----------------------------------------------------------------------------------------------------
-function FasterLootPlus:OnAddRuleSet( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-  -- Add a new loot rule
-  self:CreateEditRuleSetWindow(nil)
+function FasterLootPlus:OnLootRuleToggle( wndHandler, wndControl, eMouseButton )
+  local par = wndHandler:GetParent()
+  local idx = par:GetData()
+  local currentSet = self.settings.currentRuleSet
+  local checked = wndControl:IsChecked()
+  self.settings.ruleSets[currentSet].lootRules[idx].enabled = checked
 end
 
-function FasterLootPlus:CreateEditRuleSetWindow( wndHandler )
-  if self.state.windows.editRuleSets == nil then
-    self.state.windows.editRuleSets = Apollo.LoadForm(self.xmlDoc, "EditRuleSetWindow", nil, self)
-    self.state.windows.editRuleSets:Show(true)
+function FasterLootPlus:OnMoveLootRuleDown( wndHandler, wndControl, eMouseButton )
+  local currentSet = self.settings.currentRuleSet
+  local size = #self.settings.ruleSets[currentSet].lootRules
+  local par = wndHandler:GetParent()
+  local idx = par:GetData()
+  if idx < size then
+    local temp = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx+1])
+    self.settings.ruleSets[currentSet].lootRules[idx+1] = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx])
+    self.settings.ruleSets[currentSet].lootRules[idx] = shallowcopy(temp)
+    self:RebuildLootRuleItems()
+  end
+end
 
-    if wndHandler ~= nil then
-      -- Get Parent List item and associated item data.
-      local idx = wndHandler:GetData()
-      local item = self.settings.ruleSets[idx]
-
-      -- Populate the Edit window
-      self.state.windows.editRuleSets:SetData(idx)
-      self.state.windows.editRuleSets:FindChild("RuleSetName"):FindChild("Text"):SetText(item.label)
-      self:RebuildRuleSetItems()
-      self.state.windows.ruleSetList:ArrangeChildrenVert()
+function FasterLootPlus:OnMoveLootRuleUp( wndHandler, wndControl, eMouseButton )
+  function FasterLootPlus:OnMoveLootRuleDown( wndHandler, wndControl, eMouseButton )
+    local currentSet = self.settings.currentRuleSet
+    local size = #self.settings.ruleSets[currentSet].lootRules
+    local par = wndHandler:GetParent()
+    local idx = par:GetData()
+    if idx > 1 then
+      local temp = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx])
+      self.settings.ruleSets[currentSet].lootRules[idx] = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx-1])
+      self.settings.ruleSets[currentSet].lootRules[idx-1] = shallowcopy(temp)
+      self:RebuildLootRuleItems()
     end
   end
-end
-
----------------------------------------------------------------------------------------------------
--- FasterLootPlus RuleSetListItem UI Functions
----------------------------------------------------------------------------------------------------
-
-function FasterLootPlus:OnLoadRuleSet( wndHandler, wndControl, eMouseButton )
-  local par = wndHandler:GetParent()
-  local idx = par:GetData()
-  -- Change Selected Rule
-  self.settings.currentRuleSet = idx
-  self:RebuildRuleSetItems()
-  self:RebuildLootRuleItems()
-end
-
-function FasterLootPlus:OnDeleteRuleSet( wndHandler, wndControl, eMouseButton )
-  -- Add a new loot rule
-  local par = wndHandler:GetParent()
-  local idx = par:GetData()
-  -- Cant Delete the first rule, there always needs to be at least one set
-  if idx ~= 0 then
-    self.state.windows.confirmDeleteSet = Apollo.LoadForm(self.xmlDoc, "ConfirmDeleteSetWindow", nil, self)
-    self.state.windows.confirmDeleteSet:SetData(idx)
-  end
-end
-
-function FasterLootPlus:OnRuleSetSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-  if wndHandler ~= wndControl then
-    return
-  end
-
-  if eMouseButton == 0 and bDoubleClick then -- Double Left Click
-    -- Open the Loot Rule Window for this loot rule.
-    self:CreateEditRuleSetWindow( wndHandler )
-  end
-end
-
----------------------------------------------------------------------------------------------------
--- FasterLootPlus EditRuleSetWindow UI Functions
----------------------------------------------------------------------------------------------------
-
-function FasterLootPlus:OnEditRuleSetSave( wndHandler, wndControl, eMouseButton )
-  local label = self.state.windows.editRuleSets:FindChild("RuleSetName"):FindChild("Text"):GetText()
-  local idx = self.state.windows.editRuleSets:GetData()
-
-  if idx then
-    -- Update Existing Item
-    self.settings.ruleSets[idx].label = label
-  else
-    -- Add New Item
-    local item = shallowcopy(self:GetBaseRuleSet())
-    item.label = label
-    table.insert(self.settings.ruleSets, item)
-  end
-
-  self:RebuildRuleSetItems()
-  self:CloseEditRuleSet()
-end
-
-function FasterLootPlus:OnEditRuleSetCancel( wndHandler, wndControl, eMouseButton )
-  self:CloseEditRuleSet()
-end
-
-function FasterLootPlus:OnEditRuleSetClosed( wndHandler, wndControl )
-  self:CloseEditRuleSet()
-end
-
-function FasterLootPlus:CloseEditRuleSet()
-  self.state.windows.editRuleSets:Show(false)
-  self.state.windows.editRuleSets:Destroy()
-  self.state.windows.editRuleSets = nil
 end
 
 
@@ -351,8 +275,16 @@ function FasterLootPlus:OnEditLootRuleSave( wndHandler, wndControl, eMouseButton
   item.label = self.state.windows.editLootRule:FindChild("RuleLabel"):FindChild("Text"):GetText()
   item.itemName = self.state.windows.editLootRule:FindChild("ItemName"):FindChild("Text"):GetText()
   item.itemType = self.state.windows.editLootRule:FindChild("ItemType"):FindChild("ItemTypeSelection"):GetData()
-  item.randomAssign = self.state.windows.editLootRule:FindChild("PatternMatchingCheckButton"):FindChild("Button"):IsChecked()
-  item.patternMatch = self.state.windows.editLootRule:FindChild("RandomAssignCheckButton"):FindChild("Button"):IsChecked()
+  item.patternMatch = self.state.windows.editLootRule:FindChild("PatternMatchingCheckButton"):FindChild("Button"):IsChecked()
+  item.randomAssign = self.state.windows.editLootRule:FindChild("RandomAssignCheckButton"):FindChild("Button"):IsChecked()
+  item.itemQuality = self.state.windows.editLootRule:FindChild("ItemQuality"):FindChild("QualityTypeSelection"):GetData()
+  item.itemLevel.compareOp = self.state.windows.editLootRule:FindChild("ItemLevel"):FindChild("ItemLevelComparerSelection"):GetData()
+  local lvl = self.state.windows.editLootRule:FindChild("ItemLevel"):FindChild("Text"):GetText()
+  if tonumber(lvl) == nil then
+    lvl = "0"
+  end
+  item.itemLevel.level = lvl
+  item.enabled = self.state.windows.editLootRule:FindChild("EnabledCheckButton"):FindChild("Button"):IsChecked()
   item.assignees = {}
   for idx,value in pairs(self.state.currentAssignees) do
     table.insert(item.assignees, value)
@@ -383,10 +315,14 @@ end
 function FasterLootPlus:CloseEditLootRule()
   self.state.windows.editLootRule:Show(false)
   self.state.windows.editLootRuleItemType:Show(false)
+  self.state.windows.editLootRuleQualityType:Show(false)
+  self.state.windows.editLootRuleILvlComparisonType:Show(false)
   self.state.windows.editLootRule:Destroy()
   self.state.windows.editLootRule = nil
   self.state.windows.assigneeList = nil
   self.state.windows.editLootRuleItemType = nil
+  self.state.windows.editLootRuleQualityType = nil
+  self.state.windows.editLootRuleILvlComparisonType = nil
   self.state.currentAssignees = {}
   -- Close dependant windows
   if self.state.windows.editAssignee then
@@ -403,6 +339,11 @@ function FasterLootPlus:OnAssigneeItemSelected( wndHandler, wndControl, eMouseBu
     -- Open the Loot Rule Window for this loot rule.
     self:CreateEditAssigneeWindow(wndHandler)
   end
+end
+
+function FasterLootPlus:OnEditAssignee( wndHandler, wndControl, eMouseButton )
+  local par = wndHandler:GetParent()
+  self:CreateEditAssigneeWindow(par)
 end
 
 function FasterLootPlus:OnDeleteListAssignee( wndHandler, wndControl, eMouseButton )
@@ -429,52 +370,101 @@ end
 
 function FasterLootPlus:OnItemTypeBtn( wndHandler, wndControl, eMouseButton )
   local bChecked = wndHandler:IsChecked()
+  self.state.windows.editLootRuleItemType:Show(bChecked)
+  self.state.windows.editLootRuleItemType:ToFront()
+end
 
-  self.state.windows.editLootRuleItemType:GetParent():FindChild("ItemTypeDropdown"):Show(bChecked)
+function FasterLootPlus:OnQualityTypeBtn( wndHandler, wndControl, eMouseButton )
+  local bChecked = wndHandler:IsChecked()
+  self.state.windows.editLootRuleQualityType:Show(bChecked)
+  self.state.windows.editLootRuleQualityType:ToFront()
+end
+
+function FasterLootPlus:OnILvlCompareTypeBtn( wndHandler, wndControl, eMouseButton )
+  local bChecked = wndHandler:IsChecked()
+  self.state.windows.editLootRuleILvlComparisonType:Show(bChecked)
+  self.state.windows.editLootRuleILvlComparisonType:ToFront()
 end
 
 function FasterLootPlus:PopulateItemTypeDropdown()
   local dropdown = self.state.windows.editLootRuleItemType
-  --ItemTypeDropDownListItem
-  self:DestroyWindowList(self.state.itemTypeItems)
-  -- Base Case
-  --for key,value in pairs(FasterLootPlus.tItemTypes) do
+  local list = self.state.listItems.itemTypes
+  local listItemName = "ItemTypeListItem"
+  --ItemTypeListItem
+  self:DestroyWindowList(list)
   -- Blank first item
-  local wnd = self:CreateDownListItem(nil, "", "ItemTypeDropDownListItem", self.state.windows.editLootRuleItemType)
-  table.insert(self.state.itemTypeItems, wnd)
+  local wnd = self:CreateDownListItem(nil, "", listItemName, dropdown)
+  table.insert(list, wnd)
   -- Loop through remaining items
+  --for key,value in pairs(FasterLootPlus.tItemTypes) do
   for i = -100, 500, 1 do
     local v = FasterLootPlus.tItemTypes[i]
     if v then
-      local wnd = self:CreateDownListItem(i, v, "ItemTypeDropDownListItem", self.state.windows.editLootRuleItemType)
-      table.insert(self.state.itemTypeItems, wnd)
+      local wnd = self:CreateDownListItem(i, v, listItemName, dropdown)
+      table.insert(list, wnd)
     end
   end
-  self.state.windows.editLootRuleItemType:ArrangeChildrenVert()
+  dropdown:ArrangeChildrenVert()
 end
 
-function FasterLootPlus:CreateDownListItem(key, value, itemType, dest)
+function FasterLootPlus:PopulateQualityDropdown()
+  local dropdown = self.state.windows.editLootRuleQualityType
+  local list = self.state.listItems.itemQualities
+  local listItemName = "ItemQualityListItem"
+  --ItemTypeDropDownListItem
+  self:DestroyWindowList(list)
+  -- Blank first item
+  local wnd = self:CreateDownListItem(nil, "", listItemName, dropdown)
+  table.insert(list, wnd)
+  -- Loop through remaining items
+  for idx,item in ipairs(FasterLootPlus.tItemQuality) do
+    local wnd = self:CreateDownListItem(idx, item.Name, listItemName, dropdown, item.Color)
+    table.insert(list, wnd)
+  end
+  dropdown:ArrangeChildrenVert()
+end
+
+function FasterLootPlus:PopulateILevelCompareDropdown()
+  local dropdown = self.state.windows.editLootRuleILvlComparisonType
+  local list = self.state.listItems.itemLevelComparitors
+  local listItemName = "ItemLevelComparitorListItem"
+  --ItemTypeDropDownListItem
+  self:DestroyWindowList(list)
+  -- Blank first item
+  local wnd = self:CreateDownListItem(nil, "", listItemName, dropdown)
+  table.insert(list, wnd)
+  -- Loop through remaining items
+  for key,value in pairs(FasterLootPlus.tComparisonOps) do
+    local wnd = self:CreateDownListItem(key, value, listItemName, dropdown)
+    table.insert(list, wnd)
+  end
+  dropdown:ArrangeChildrenVert()
+end
+
+function FasterLootPlus:CreateDownListItem(key, value, itemType, dest, color)
+  if color == nil then color = "ffffffff" end
   local wnd = Apollo.LoadForm(self.xmlDoc, itemType, dest, self)
+  wnd:SetTextColor(ApolloColor.new(color))
   wnd:SetText(value)
   wnd:SetData(key)
   return wnd
 end
 
-function FasterLootPlus:OnItemTypeDropDownItemSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
+function FasterLootPlus:OnListItemSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
   -- Highlight
   wndHandler:SetSprite("BK3:btnHolo_ListView_MidPressed")
   self.state.windows.selectedItem = wndHandler
 end
 
-function FasterLootPlus:OnItemTypeDropDownItemEntered( wndHandler, wndControl, x, y )
+function FasterLootPlus:OnListItemEntered( wndHandler, wndControl, x, y )
   wndHandler:SetSprite("BK3:btnHolo_ListView_MidFlyby")
 end
 
-function FasterLootPlus:OnItemTypeDropDownItemExited( wndHandler, wndControl, x, y )
+function FasterLootPlus:OnListItemExited( wndHandler, wndControl, x, y )
   wndHandler:SetSprite("BK3:btnHolo_ListView_MidNormal")
 end
 
-function FasterLootPlus:OnItemTypeDropDownItemSelectedUp( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY )
+function FasterLootPlus:OnItemTypeSelectedUp( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY )
   -- Check that the user hasn't moved out of the selected item.
   if self.state.windows.selectedItem == wndHandler then
     local idx = wndHandler:GetData()
@@ -488,6 +478,70 @@ function FasterLootPlus:OnItemTypeDropDownItemSelectedUp( wndHandler, wndControl
   end
 end
 
+function FasterLootPlus:OnItemQualitySelectedUp( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY )
+  -- Check that the user hasn't moved out of the selected item.
+  if self.state.windows.selectedItem == wndHandler then
+    local idx = wndHandler:GetData()
+    local text = wndHandler:GetText()
+    local wnd = self.state.windows.editLootRuleQualityType:GetParent()
+    local select = wnd:FindChild("QualityTypeSelection")
+    select:SetCheck(false)
+    local item = FasterLootPlus.tItemQuality[idx]
+    if item ~= nil then
+      select:SetText(item.Name)
+      select:SetNormalTextColor(ApolloColor.new(item.Color))
+      select:SetData(idx)
+    else
+      select:SetText("")
+      select:SetData(nil)
+    end
+    wnd:FindChild("QualityDropdown"):Show(false)
+  end
+end
+
+function FasterLootPlus:OnItemLevelComparitorSelectedUp( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY )
+  -- Check that the user hasn't moved out of the selected item.
+  if self.state.windows.selectedItem == wndHandler then
+    local idx = wndHandler:GetData()
+    local text = wndHandler:GetText()
+    local wnd = self.state.windows.editLootRuleILvlComparisonType:GetParent()
+    local select = wnd:FindChild("ItemLevelComparerSelection")
+    select:SetCheck(false)
+    select:SetText(text)
+    select:SetData(idx)
+    wnd:FindChild("ItemLevelComparerDropdown"):Show(false)
+  end
+end
+
+function FasterLootPlus:DecItemLevel( wndHandler, wndControl, eMouseButton )
+  local par = wndHandler:GetParent()
+  local txt = par:FindChild("Text")
+  local str = txt:GetText()
+  local value = tonumber(str)
+  if value ~= nil then
+    if value > 0 then
+      value = value - 1
+    end
+  else
+    value = 0
+  end
+  txt:SetText(tostring(value))
+end
+
+function FasterLootPlus:IncItemLevel( wndHandler, wndControl, eMouseButton )
+  local par = wndHandler:GetParent()
+  local txt = par:FindChild("Text")
+  local str = txt:GetText()
+  local value = tonumber(str)
+  if value ~= nil then
+    if value < 90 then
+      value = value + 1
+    end
+  else
+    value = 0
+  end
+  txt:SetText(tostring(value))
+end
 ---------------------------------------------------------------------------------------------------
 -- EditAssigneeWindow Functions
 ---------------------------------------------------------------------------------------------------
@@ -532,13 +586,38 @@ function FasterLootPlus:ClearLootRuleItems()
   self:DestroyWindowList(self.state.ruleItems)
 end
 
+
 function FasterLootPlus:AddLootRuleItem(index, item)
   local wnd = Apollo.LoadForm(self.xmlDoc, "LootRuleListItem", self.state.windows.ruleList, self)
   wnd:SetData(index)
   -- Populate List Items fields from the item data
   wnd:FindChild("Label"):SetText(item.label)
-  wnd:FindChild("Pattern"):SetText(item.itemName)
+  if item.patternMatch == true then
+    wnd:FindChild("Pattern"):SetText("RegExp(" .. item.itemName .. ")")
+  else
+    wnd:FindChild("Pattern"):SetText(item.itemName)
+  end
   wnd:FindChild("Type"):SetText(self.tItemTypes[item.itemType])
+  if item.itemQuality ~= nil then
+    wnd:FindChild("Quality"):SetText(self.tItemQuality[item.itemQuality].Name)
+    wnd:FindChild("Quality"):SetTextColor(ApolloColor.new(self.tItemQuality[item.itemQuality].Color))
+  else
+    wnd:FindChild("Quality"):SetText("")
+  end
+  if item.itemLevel.compareOp ~= nil then
+    local str = "ilvl " .. self.tComparisonOps[item.itemLevel.compareOp] .. " " .. item.itemLevel.level
+    wnd:FindChild("ItemLevel"):SetText(str)
+  else
+    wnd:FindChild("ItemLevel"):SetText("")
+  end
+  wnd:FindChild("EnableRuleButton"):SetCheck(item.enabled)
+
+  local str = ""
+  if item.randomAssign == true then
+    str = "-Randomized-\n"
+  end
+  str = str .. self:ListToLineSeperatedString(item.assignees)
+  wnd:SetTooltip(str)
 
   table.insert(self.state.ruleItems, wnd)
 end
@@ -582,34 +661,6 @@ end
 
 function FasterLootPlus:ClearRuleSetItems()
   self:DestroyWindowList(self.state.ruleSetItems)
-end
-
-function FasterLootPlus:AddRuleSetItem(index, item)
-  local wnd = Apollo.LoadForm(self.xmlDoc, "RuleSetListItem", self.state.windows.ruleSetList, self)
-  wnd:SetData(index)
-  wnd:FindChild("Label"):SetText(item.label)
-  if index == self.settings.currentRuleSet then
-    wnd:FindChild("Selected"):Show(true)
-  else
-    wnd:FindChild("Selected"):Show(false)
-  end
-  -- Disable Delete for Root Set
-  if index == 0 then
-    wnd:FindChild("DeleteButton"):Enable(false)
-  end
-
-  table.insert(self.state.ruleSetItems, wnd)
-end
-
-function FasterLootPlus:RebuildRuleSetItems()
-  local vScrollPos = self.state.windows.ruleSetList:GetVScrollPos()
-  self:SaveLocation()
-  self:ClearRuleSetItems()
-  for key,item in pairs(self.settings.ruleSets) do
-    self:AddRuleSetItem(key, item)
-  end
-  self.state.windows.ruleSetList:SetVScrollPos(vScrollPos)
-  self:RefreshUI()
 end
 
 ---------------------------------------------------------------------------------------------------

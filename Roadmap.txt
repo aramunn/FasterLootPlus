@@ -1,0 +1,39 @@
+* "Duplicate Rule Set" Button
+* "Assignee Sort Order" Buttons
+* Loot Rule Save validation
+** "Stupid Rule" Warning on Validation
+* Auto Loot Logic
+* Button Hold logic for Increment/Decrement
+* Fix "Loot Rule Sort Order" Button Functionality
+* Move listItem tables into the listItems table of the state object
+* Abstraction of the "Drop Down List" functionality
+* Auto-Master Loot Setting Options
+** Detect when leader switches and leader is set to self.
+** If option enabled change to masterloo with criteria
+* Randomize Remaining button
+* Replace Masterloot window
+** Must wait util out of combat to pop (include option for this)
+
+
+
+
+== Validation Rules ==
+** Must have at least one assignee
+** Can't radomize with one assignee
+** Can't take all items of specific item types & quality pairs above of a specific quality
+** Duplicate assignee name
+
+
+
+Randomize Default Rules
+--   -- Various desirable items
+--   if strItemName == "Eldan Runic Module" or
+--      strItemName == "Suspended Biophage Cluster" or
+--      string.find(strItemName, "Archivos") or
+--      string.find(strItemName, "Warplot Boss") or
+--      string.match(strItemName, "Sign of %a+ - Eldan") or
+--      string.find(strItemName, "Ground Mount") or
+--      string.find(strItemName, "Hoverboard Mount") then
+--     self:PrintDB("Can't random " .. strItemName .. " because of name")
+--     return false
+--   end

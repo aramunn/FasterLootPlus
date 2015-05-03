@@ -44,3 +44,39 @@ function FasterLootPlus:DestroyWindowList(list)
   end
   list = {}
 end
+
+function FasterLootPlus:ListToLineSeperatedString(list)
+  local i = 0
+  local str = ""
+  if list ~= nil then
+    for idx,value in ipairs(list) do
+      if i > 0 then
+        str = str .. "\n"
+      end
+      str = str .. value
+      i = i + 1
+    end
+  end
+  return str
+end
+
+function FasterLootPlus:CompareOp(op, a, b)
+  if op ~= nil then
+    if op == "eq" then
+      return (a == b)
+    elseif op == "lt" then
+      return (a < b)
+    elseif op == "lte" then
+      return (a <= b)
+    elseif op == "gt" then
+      return (a > b)
+    elseif op == "gte" then
+      return (a >= b)
+    elseif op == "neq" then
+      return (a ~= b)
+    else
+      return true
+    end
+  end
+  return true
+end
