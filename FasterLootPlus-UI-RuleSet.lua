@@ -52,7 +52,7 @@ function FasterLootPlus:OnLoadRuleSet( wndHandler, wndControl, eMouseButton )
   local par = wndHandler:GetParent()
   local idx = par:GetData()
   -- Change Selected Rule
-  self.settings.currentRuleSet = idx
+  self.settings.user.currentRuleSet = idx
   self:RebuildRuleSetItems()
   self:RebuildLootRuleItems()
 end
@@ -126,11 +126,15 @@ end
 -- FasterLootPlus UI RuleSet Maintenance Functions
 ---------------------------------------------------------------------------------------------------
 
+function FasterLootPlus:ClearRuleSetItems()
+  self:DestroyWindowList(self.state.listItems.ruleSets)
+end
+
 function FasterLootPlus:AddRuleSetItem(index, item)
   local wnd = Apollo.LoadForm(self.xmlDoc, "RuleSetListItem", self.state.windows.ruleSetList, self)
   wnd:SetData(index)
   wnd:FindChild("Label"):SetText(item.label)
-  if index == self.settings.currentRuleSet then
+  if index == self.settings.user.currentRuleSet then
     wnd:FindChild("Selected"):Show(true)
   else
     wnd:FindChild("Selected"):Show(false)
@@ -140,7 +144,7 @@ function FasterLootPlus:AddRuleSetItem(index, item)
     wnd:FindChild("DeleteButton"):Enable(false)
   end
 
-  table.insert(self.state.ruleSetItems, wnd)
+  table.insert(self.state.listItems.ruleSets, wnd)
 end
 
 function FasterLootPlus:RebuildRuleSetItems()

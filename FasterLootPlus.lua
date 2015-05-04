@@ -11,6 +11,7 @@
 ------------------------------------------------------------------------------------------------
 
 require "Window"
+require "GroupLib"
 require "ChatSystemLib"
 
 -----------------------------------------------------------------------------------------------
@@ -27,19 +28,27 @@ local addonCRBML = Apollo.GetAddon("MasterLoot")
 local FASTERLOOTPLUS_CURRENT_VERSION = "1.0.0"
 
 local tDefaultSettings = {
-    user = {
-      isEnabled = true,
-      savedWndLoc = {}
-    },
-    debug = false,
-    version = FASTERLOOTPLUS_CURRENT_VERSION,
-    ruleSets = {
-      [0] = {
-        label = "Default",
-        lootRules = {}
-      }
-    },
+  version = FASTERLOOTPLUS_CURRENT_VERSION,
+  debug = false,
+  user = {
+    savedWndLoc = {},
+    isEnabled = true,
     currentRuleSet = 0
+  },
+  options = {
+    autoSetMasterLootWhenLeading = false,
+    autoEnableInRaid = false,
+    autoEnableInDungeon = false,
+    autoDisableUponExitInstance = true,
+    masterLootRule = GroupLib.LootRule.NeedBeforeGreed,
+    masterLootQualityThreshold = GroupLib.LootThreshold.Excellent
+  },
+  ruleSets = {
+    [0] = {
+      label = "Default",
+      lootRules = {}
+    }
+  }
 }
 
 local tDefaultState = {
@@ -74,11 +83,14 @@ local tDefaultState = {
     editRuleIncILvlHeld = false,
     editRuleDecILvlHeld = false
   },
-  ruleSetItems = {},     -- Rule Set List Items (Stores Windows)
-  ruleItems = {},        -- Rule List Items (Stores Windows)
-  assigneeItems = {},    -- Assignee List Items (Stores Windows)
+  player = {
+    isInRaid = false,
+    isInDungeon = false,
+    isLeader = false,
+    currentContinent = 0,
+    name = ""
+  },
   currentAssignees = {}, -- List of current Assignees for the item
-  --itemTypeItems = {}
 }
 
 -----------------------------------------------------------------------------------------------
@@ -128,6 +140,9 @@ function FasterLootPlus:OnLoad()
 
   Apollo.RegisterEventHandler("Generic_ToggleFasterLootPlus", "OnToggleFasterLootPlus", self)
   Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
+  -- Handles when the Group is Updated
+  Apollo.RegisterEventHandler("Group_Updated", "OnGroupUpdated", self)
+  Apollo.RegisterEventHandler("SubZoneChanged", "OnZoneChanging", self)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -250,7 +265,7 @@ end
 function FasterLootPlus:OnMasterLootUpdate(bForceOpen)
   local tMasterLootList = self:GatherMasterLoot()
 
-  if self.setting.user.isEnabled then
+  if self.settings.user.isEnabled == true then
     -- Check each item against each rule filter
     for idxMasterItem, tCurMasterLoot in pairs(tMasterLootList) do
       self:ProcessItem(tCurMasterLoot)
@@ -327,7 +342,7 @@ end
 -- FasterLootPlus CheckItem
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:ProcessItem(loot)
-  local current = self.settings.currentRuleSet
+  local current = self.settings.user.currentRuleSet
   local item = loot.itemDrop
   for idx,rule in ipairs(self.settings.ruleSets[current]) do
     -- Only check the rule if it is enabled
@@ -432,6 +447,55 @@ function FasterLootPlus:FixCRBML()
     self:PrintDB("MasterLoot not ready, trying again")
     Apollo.CreateTimer("FixCRBML_Delay", 1, false)
     Apollo.StartTimer("FixCRBML_Delay")
+  end
+end
+
+-----------------------------------------------------------------------------------------------
+-- FasterLootPlus Group Update Logic
+-----------------------------------------------------------------------------------------------
+function FasterLootPlus:OnGroupUpdated()
+  self.state.player.isLeader = GroupLib.AmILeader()
+  if self.state.player.isLeader == true then
+    self:OnZoneChanging()
+  end
+end
+
+function FasterLootPlus:IsRaidContinent(nContinentId)
+  return nContinentId == 52 or nContinentId == 67
+end
+
+function FasterLootPlus:IsDungeonContinent(nContinentId)
+  return nContinentId == 27 or nContinentId == 28 or nContinentId == 25 or nContinentId == 16 or nContinentId == 17 or nContinentId == 23
+    or nContinentId == 15 or nContinentId == 13 or nContinentId == 14 or nContinentId == 48
+end
+
+function FasterLootPlus:OnZoneChanging()
+  local zoneMap = GameLib.GetCurrentZoneMap()
+  if zoneMap and zoneMap.continentId then
+    self.state.player.currentContinent = zoneMap.continentId
+    self.state.player.isInRaid = self:IsRaidContinent(self.state.player.currentContinent)
+    self.state.player.isInDungeon = self:IsRaidContinent(self.state.player.currentContinent)
+  end
+  self:ProcessOptions()
+end
+
+function FasterLootPlus:ProcessOptions()
+  -- Check if we need to turn on or off the addon based on option flags
+  if self.settings.options.autoEnableInRaid == true and self.state.player.isInRaid == true or self.setting.options.autoEnableInDungeon == true and self.state.player.isInDungeon == true then
+    self.settings.user.isEnabled = true
+  end
+  -- Similarly if we are not in a raid or dungeon and we are set to disable on exit
+  if self.setting.options.autoDisableUponExitInstance == true and self.state.player.isInRaid == false and self.state.player.isInDungeon == false then
+    self.settings.user.isEnabled = false
+  end
+
+  -- If we're the leader and the functionality is currently enabled then process the options
+  if self.state.player.isLeader == true and self.settings.user.isEnabled then
+    -- The option for master loot is enabled then check if we're in the correct instance types
+    if self.settings.options.autoSetMasterLootWhenLeading == true then
+      local curLootRule = GroupLib.GetLootRules()
+      GroupLib.SetLootRules(self.settings.options.masterLootRule, GroupLib.LootRule.Master, self.settings.options.masterLootQualityThreshold, curLootRule.eHarvestRule)
+    end
   end
 end
 

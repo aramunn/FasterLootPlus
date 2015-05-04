@@ -2,18 +2,16 @@
 * "Assignee Sort Order" Buttons
 * Loot Rule Save validation
 ** "Stupid Rule" Warning on Validation
-* Auto Loot Logic
-* Button Hold logic for Increment/Decrement
+* Button Hold logic for Increment/Decrement Item Level
 * Fix "Loot Rule Sort Order" Button Functionality
-* Move listItem tables into the listItems table of the state object
 * Abstraction of the "Drop Down List" functionality
 * Auto-Master Loot Setting Options
 ** Detect when leader switches and leader is set to self.
-** If option enabled change to masterloo with criteria
+** If option enabled change to masterloot with criteria
 * Randomize Remaining button
 * Replace Masterloot window
 ** Must wait util out of combat to pop (include option for this)
-
+* Sort Item Type List
 
 
 
@@ -23,9 +21,7 @@
 ** Can't take all items of specific item types & quality pairs above of a specific quality
 ** Duplicate assignee name
 
-
-
-Randomize Default Rules
+Do not random these
 --   -- Various desirable items
 --   if strItemName == "Eldan Runic Module" or
 --      strItemName == "Suspended Biophage Cluster" or
@@ -37,3 +33,26 @@ Randomize Default Rules
 --     self:PrintDB("Can't random " .. strItemName .. " because of name")
 --     return false
 --   end
+
+GroupLib.LootRule.FreeForAll
+    GroupLib.LootRule.Master
+    GroupLib.LootRule.NeedBeforeGreed
+    GroupLib.LootRule.RoundRobin
+    GroupLib.LootThreshold.Artifact
+    GroupLib.SetLootRules()
+
+
+local tCurrRules = GroupLib.GetLootRules()
+-- eNormalRule
+-- eThresholdRule
+-- eThresholdQuality
+-- eHarvestRule
+
+  if strSubOptionName == "LootThreshold" then
+    GroupLib.SetLootRules(tCurrRules.eNormalRule, tCurrRules.eThresholdRule, wndHandler:GetData(), tCurrRules.eHarvestRule)
+  elseif strSubOptionName == "ThresholdDistribution" then
+    GroupLib.SetLootRules(tCurrRules.eNormalRule, wndHandler:GetData(), tCurrRules.eThresholdQuality, tCurrRules.eHarvestRule)
+  elseif strSubOptionName == "JoinRequest" then
+    GroupLib.SetJoinRequestMethod(wndHandler:GetData())
+  elseif strSubOptionName == "Referral" then
+    GroupLib.SetReferralMethod(wndHandler:GetData())
