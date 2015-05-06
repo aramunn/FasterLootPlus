@@ -148,6 +148,8 @@ FasterLootPlus.tItemTypes = {
   [143] = "Untyped (Consumable/Flair/etc.)",
   [155] = "Decor",
   [164] = "Improvement",
+  [170] = "Untyped (Reputation Item)",
+  [171] = "Untyped (Quest Turn-in -- Skull)"
   [183] = "Untyped (Mount)",
   [184] = "Costume - Chest",
   [185] = "Costume - Legs",
@@ -169,11 +171,17 @@ FasterLootPlus.tItemTypes = {
   [215] = "Gadget",
   [219] = "Wood",
   [200] = "Treasure - Junk",
+  [208] = "Meat",
   [221] = "Produce",
+  [226] = "Cloth Scraps - Junk",
   [227] = "Essence - Junk",
   [231] = "Fur - Junk",
   [232] = "Gland - Junk",
   [236] = "Knick-Knacks - Junk",
+  [237] = "Metal Scraps - Junk",
+  [246] = "Spores - Junk",
+  [250] = "Totem - Junk",
+  [251] = "Tusk - Junk",
   [254] = "Tailor Pattern",
   [255] = "Outfitter Guide",
   [256] = "Armorer Design",
@@ -237,6 +245,8 @@ FasterLootPlus.tItemTypes = {
   [414] = "Class Rune Sets",
   [423] = "Elder Rune Sets",
   [428] = "Attribute Rune",
+  [448] = "Tradeskill Loot Bag",
+  [449] = "Loot Bag",
   [450] = "Dye Loot Bag",
   [455] = "Nexus Nourishments",
   [465] = "Runic Flux",
@@ -260,8 +270,8 @@ FasterLootPlus.tComparisonOps = {
 
 FasterLootPlus.tItemQuality = {
   [Item.CodeEnumItemQuality.Inferior] = {
-    Abbreviation  = "Infr",
-    Name          = "Inferior",
+    Abbreviation  = "In",
+    Name          = Apollo.GetString("CRB_Inferior"),
     Color			    = "ItemQuality_Inferior",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Silver",
     HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Silver",
@@ -270,8 +280,8 @@ FasterLootPlus.tItemQuality = {
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Silver",
   },
   [Item.CodeEnumItemQuality.Average] = {
-    Abbreviation  = "Avrg",
-    Name			    = "Average",
+    Abbreviation  = "Av",
+    Name			    = Apollo.GetString("CRB_Average"),
     Color		   	  = "ItemQuality_Average",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_White",
     HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_White",
@@ -280,8 +290,8 @@ FasterLootPlus.tItemQuality = {
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_White",
   },
   [Item.CodeEnumItemQuality.Good]	= {
-    Abbreviation  = "Good",
-    Name    			= "Good",
+    Abbreviation  = "Gd",
+    Name    			= Apollo.GetString("CRB_Good"),
     Color 		   	= "ItemQuality_Good",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Green",
     HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Green",
@@ -290,8 +300,8 @@ FasterLootPlus.tItemQuality = {
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Green",
   },
   [Item.CodeEnumItemQuality.Excellent] = {
-    Abbreviation  = "Exlt",
-    Name    			= "Excellent",
+    Abbreviation  = "Ex",
+    Name    			= Apollo.GetString("CRB_Excellent"),
     Color 		   	= "ItemQuality_Excellent",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Blue",
     HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Blue",
@@ -300,8 +310,8 @@ FasterLootPlus.tItemQuality = {
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Blue",
   },
   [Item.CodeEnumItemQuality.Superb] = {
-    Abbreviation  = "Sprb",
-    Name    			= "Superb",
+    Abbreviation  = "Sb",
+    Name    			= Apollo.GetString("CRB_Superb"),
     Color 		   	= "ItemQuality_Superb",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Purple",
     HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Purple",
@@ -310,8 +320,8 @@ FasterLootPlus.tItemQuality = {
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Purple",
   },
   [Item.CodeEnumItemQuality.Legendary] = {
-    Abbreviation  = "Lgnd",
-    Name    			= "Legendary",
+    Abbreviation  = "Ld",
+    Name    			= Apollo.GetString("CRB_Legendary"),
     Color 		   	= "ItemQuality_Legendary",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Orange",
     HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Orange",
@@ -320,8 +330,8 @@ FasterLootPlus.tItemQuality = {
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Orange",
   },
   [Item.CodeEnumItemQuality.Artifact] = {
-    Abbreviation  = "Artf",
-    Name    			= "Artifact",
+    Abbreviation  = "Af",
+    Name    			= Apollo.GetString("CRB_Artifact"),
     Color 		   	= "ItemQuality_Artifact",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Pink",
     HeaderSprite	= "CRB_Tooltips:sprTooltip_Header_Pink",
@@ -329,6 +339,20 @@ FasterLootPlus.tItemQuality = {
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetPink",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Pink",
   }
+}
+
+FasterLootPlus.tLootRules =
+{
+  [GroupLib.LootRule.Master]          = Apollo.GetString("Group_MasterLoot"),
+  [GroupLib.LootRule.RoundRobin]      = Apollo.GetString("Group_RoundRobin"),
+  [GroupLib.LootRule.NeedBeforeGreed] = Apollo.GetString("Group_NeedBeforeGreed"),
+  [GroupLib.LootRule.FreeForAll]      = Apollo.GetString("Group_FFA")
+}
+
+FasterLootPlus.tHarvestLootRules =
+{
+  [GroupLib.HarvestLootRule.FirstTagger] 		= Apollo.GetString("Group_FFA"),
+  [GroupLib.HarvestLootRule.RoundRobin] 		= Apollo.GetString("Group_RoundRobin"),
 }
 
 function FasterLootPlus:LoadDefaultLootRules()

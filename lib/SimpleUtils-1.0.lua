@@ -73,15 +73,15 @@ function deepcopy(orig)
     return copy
 end
 
-function cprint(string)
+function SimpleUtils:cprint(string)
   ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Command, string, "")
 end
 
-function debug(string)
+function SimpleUtils:debug(string)
   ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Debug, string, "")
 end
 
-function pprint(string)
+function SimpleUtils:pprint(string)
   for _,channel in pairs(ChatSystemLib.GetChannels()) do
     if channel:GetType() == ChatSystemLib.ChatChannel_Party then
       channel:Send(string)

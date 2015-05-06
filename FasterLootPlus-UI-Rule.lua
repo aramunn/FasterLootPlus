@@ -218,19 +218,19 @@ end
 function FasterLootPlus:OnItemTypeBtn( wndHandler, wndControl, eMouseButton )
   local bChecked = wndHandler:IsChecked()
   self.state.windows.editLootRuleItemType:Show(bChecked)
-  self.state.windows.editLootRuleItemType:ToFront()
+  if bChecked == true then self.state.windows.editLootRuleItemType:ToFront() end
 end
 
 function FasterLootPlus:OnQualityTypeBtn( wndHandler, wndControl, eMouseButton )
   local bChecked = wndHandler:IsChecked()
   self.state.windows.editLootRuleQualityType:Show(bChecked)
-  self.state.windows.editLootRuleQualityType:ToFront()
+  if bChecked == true then self.state.windows.editLootRuleQualityType:ToFront() end
 end
 
 function FasterLootPlus:OnILvlCompareTypeBtn( wndHandler, wndControl, eMouseButton )
   local bChecked = wndHandler:IsChecked()
   self.state.windows.editLootRuleILvlComparisonType:Show(bChecked)
-  self.state.windows.editLootRuleILvlComparisonType:ToFront()
+  if bChecked == true then self.state.windows.editLootRuleILvlComparisonType:ToFront() end
 end
 
 function FasterLootPlus:PopulateItemTypeDropdown()

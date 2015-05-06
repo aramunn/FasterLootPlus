@@ -69,6 +69,8 @@ local tDefaultState = {
     confirmDeleteSet = nil,
     confirmClearRules = nil,
     options = nil,
+    optionsPartyLootRuleItemType = nil,
+    optionsThresholdItemType = nil,
     selectedItem = nil
   },
   listItems = {         -- These store windows for lists
@@ -77,7 +79,9 @@ local tDefaultState = {
     itemLevelComparitors = {},
     ruleSets = {},
     rules = {},
-    assignees = {}
+    assignees = {},
+    thresholds = {},
+    partyLootRules = {}
   },
   buttons = {
     editRuleIncILvlHeld = false,
@@ -481,11 +485,11 @@ end
 
 function FasterLootPlus:ProcessOptions()
   -- Check if we need to turn on or off the addon based on option flags
-  if self.settings.options.autoEnableInRaid == true and self.state.player.isInRaid == true or self.setting.options.autoEnableInDungeon == true and self.state.player.isInDungeon == true then
+  if self.settings.options.autoEnableInRaid == true and self.state.player.isInRaid == true or self.settings.options.autoEnableInDungeon == true and self.state.player.isInDungeon == true then
     self.settings.user.isEnabled = true
   end
   -- Similarly if we are not in a raid or dungeon and we are set to disable on exit
-  if self.setting.options.autoDisableUponExitInstance == true and self.state.player.isInRaid == false and self.state.player.isInDungeon == false then
+  if self.settings.options.autoDisableUponExitInstance == true and self.state.player.isInRaid == false and self.state.player.isInDungeon == false then
     self.settings.user.isEnabled = false
   end
 
