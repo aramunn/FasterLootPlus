@@ -12,13 +12,13 @@
 * Replace Masterloot window
 ** Must wait util out of combat to pop (include option for this)
 
-
 == Validation Rules ==
 ** Must have at least one assignee
 ** Can't radomize with one assignee
 ** Can't take all items of specific item types & quality pairs above of a specific quality
 ** Duplicate assignee name
 
+** Ignore Item Flag?
 Do not random these
 --   -- Various desirable items
 --   if strItemName == "Eldan Runic Module" or
@@ -31,26 +31,3 @@ Do not random these
 --     self:PrintDB("Can't random " .. strItemName .. " because of name")
 --     return false
 --   end
-
-GroupLib.LootRule.FreeForAll
-    GroupLib.LootRule.Master
-    GroupLib.LootRule.NeedBeforeGreed
-    GroupLib.LootRule.RoundRobin
-    GroupLib.LootThreshold.Artifact
-    GroupLib.SetLootRules()
-
-
-local tCurrRules = GroupLib.GetLootRules()
--- eNormalRule
--- eThresholdRule
--- eThresholdQuality
--- eHarvestRule
-
-  if strSubOptionName == "LootThreshold" then
-    GroupLib.SetLootRules(tCurrRules.eNormalRule, tCurrRules.eThresholdRule, wndHandler:GetData(), tCurrRules.eHarvestRule)
-  elseif strSubOptionName == "ThresholdDistribution" then
-    GroupLib.SetLootRules(tCurrRules.eNormalRule, wndHandler:GetData(), tCurrRules.eThresholdQuality, tCurrRules.eHarvestRule)
-  elseif strSubOptionName == "JoinRequest" then
-    GroupLib.SetJoinRequestMethod(wndHandler:GetData())
-  elseif strSubOptionName == "Referral" then
-    GroupLib.SetReferralMethod(wndHandler:GetData())
