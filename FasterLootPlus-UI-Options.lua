@@ -28,6 +28,16 @@ function FasterLootPlus:OnConfigure()
     self:PopulateThresholdDropdown()
     self:PopulatePartyLootRuleDropdown()
     -- Load Options
+    self.state.windows.options:FindChild("AutoMLButton"):SetCheck(self.settings.options.autoSetMasterLootWhenLeading)
+    self.state.windows.options:FindChild("EnableInDungeon"):SetCheck(self.settings.options.autoEnableInDungeon)
+    self.state.windows.options:FindChild("EnableInRaid"):SetCheck(self.settings.options.autoEnableInRaid)
+    self.state.windows.options:FindChild("AutoDisableButton"):SetCheck(self.settings.options.autoDisableUponExitInstance)
+    self.state.windows.options:FindChild("PartyLootRuleSelection"):SetData(self.settings.options.masterLootRule)
+    self.state.windows.options:FindChild("PartyLootRuleSelection"):SetText(self.tLootRules[self.settings.options.masterLootRule])
+    self.state.windows.options:FindChild("ThresholdSelection"):SetData(self.settings.options.masterLootQualityThreshold)
+    self.state.windows.options:FindChild("ThresholdSelection"):SetText(self.tItemQuality[self.settings.options.masterLootQualityThreshold].Name)
+    self.state.windows.options:FindChild("ThresholdSelection"):SetNormalTextColor(ApolloColor.new(self.tItemQuality[self.settings.options.masterLootQualityThreshold].Color))
+
     self.state.windows.options:Show(true)
   end
   self.state.windows.options:ToFront()
@@ -41,6 +51,12 @@ function FasterLootPlus:OnOptionsSave( wndHandler, wndControl, eMouseButton )
   --local label = self.state.windows.options:FindChild("RuleSetName"):FindChild("Text"):GetText()
   --local item = shallowcopy(self:GetBaseRuleSet())
   --item.label = label
+  self.settings.options.autoSetMasterLootWhenLeading = self.state.windows.options:FindChild("AutoMLButton"):IsChecked()
+  self.settings.options.autoEnableInDungeon = self.state.windows.options:FindChild("EnableInDungeon"):IsChecked()
+  self.settings.options.autoEnableInRaid = self.state.windows.options:FindChild("EnableInRaid"):IsChecked()
+  self.settings.options.autoDisableUponExitInstance = self.state.windows.options:FindChild("AutoDisableButton"):IsChecked()
+  self.settings.options.masterLootRule  = self.state.windows.options:FindChild("PartyLootRuleSelection"):GetData()
+  self.settings.options.masterLootQualityThreshold = self.state.windows.options:FindChild("ThresholdSelection"):GetData()
 
   self:CloseOptions()
 end
@@ -64,13 +80,23 @@ end
 function FasterLootPlus:OnThresholdTypeBtn( wndHandler, wndControl, eMouseButton )
   local bChecked = wndHandler:IsChecked()
   self.state.windows.optionsThresholdItemType:Show(bChecked)
-  if bChecked == true then self.state.windows.optionsThresholdItemType:ToFront() end
+  self:ToggleOptionButtons(not bChecked)
+  self.state.windows.options:FindChild("PartyLootRuleSelection"):Enable(not bChecked)
+  if bChecked == true then
+    self.state.windows.optionsThresholdItemType:ToFront()
+    self.state.windows.optionsPartyLootRuleItemType:Show(false)
+  end
 end
 
 function FasterLootPlus:OnPartyRuleTypeBtn( wndHandler, wndControl, eMouseButton )
   local bChecked = wndHandler:IsChecked()
   self.state.windows.optionsPartyLootRuleItemType:Show(bChecked)
-  if bChecked == true then self.state.windows.optionsPartyLootRuleItemType:ToFront() end
+  self:ToggleOptionButtons(not bChecked)
+  self.state.windows.options:FindChild("ThresholdSelection"):Enable(not bChecked)
+  if bChecked == true then
+    self.state.windows.optionsPartyLootRuleItemType:ToFront()
+    self.state.windows.optionsPartyLootRuleItemType:Show(true)
+  end
 end
 
 function FasterLootPlus:OnThresholdSelectedUp( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY )
@@ -86,6 +112,9 @@ function FasterLootPlus:OnThresholdSelectedUp( wndHandler, wndControl, eMouseBut
     select:SetNormalTextColor(ApolloColor.new(item.Color))
     select:SetData(idx)
     wnd:FindChild("ThresholdDropdown"):Show(false)
+    self:ToggleOptionButtons(true)
+    self.state.windows.options:FindChild("ThresholdSelection"):Enable(true)
+    self.state.windows.options:FindChild("PartyLootRuleSelection"):Enable(true)
   end
 end
 
@@ -100,6 +129,9 @@ function FasterLootPlus:OnPartyLootRuleSelectedUp( wndHandler, wndControl, eMous
     select:SetText(text)
     select:SetData(idx)
     wnd:FindChild("PartyLootRuleDropdown"):Show(false)
+    self:ToggleOptionButtons(true)
+    self.state.windows.options:FindChild("ThresholdSelection"):Enable(true)
+    self.state.windows.options:FindChild("PartyLootRuleSelection"):Enable(true)
   end
 end
 
@@ -129,4 +161,19 @@ function FasterLootPlus:PopulatePartyLootRuleDropdown()
     table.insert(list, wnd)
   end
   dropdown:ArrangeChildrenVert()
+end
+
+function FasterLootPlus:ToggleOptionButtons(state)
+  local mlButton = self.state.windows.options:FindChild("AutoMLButton")
+  local dungeonButton = self.state.windows.options:FindChild("EnableInDungeon")
+  local raidButton = self.state.windows.options:FindChild("EnableInRaid")
+  local disableButton = self.state.windows.options:FindChild("AutoDisableButton")
+  local cancelButton = self.state.windows.options:FindChild("CancelButton")
+  local saveButton = self.state.windows.options:FindChild("SaveButton")
+  mlButton:Enable(state)
+  dungeonButton:Enable(state)
+  raidButton:Enable(state)
+  disableButton:Enable(state)
+  cancelButton:Enable(state)
+  saveButton:Enable(state)
 end

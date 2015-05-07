@@ -195,13 +195,13 @@ function FasterLootPlus:OnSlashCommand(cmd, params)
   elseif args[1] == "show" then
     self.state.windows.main:Show(true)
   else
-    cprint("FasterLootPlus v" .. self.settings.version)
-    cprint("Usage:  /fasterloot <command>")
-    cprint("====================================")
-    cprint("   show           Open Rules Window")
-    cprint("   debug          Toggle Debug")
-    cprint("   debug update   Update the Window")
-    cprint("   reset          Clears All Rules and Sets and Resets")
+    Utils:cprint("FasterLootPlus v" .. self.settings.version)
+    Utils:cprint("Usage:  /fasterloot <command>")
+    Utils:cprint("====================================")
+    Utils:cprint("   show           Open Rules Window")
+    Utils:cprint("   debug          Toggle Debug")
+    Utils:cprint("   debug update   Update the Window")
+    Utils:cprint("   reset          Clears All Rules and Sets and Resets")
   end
 end
 
