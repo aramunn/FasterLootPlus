@@ -5,9 +5,6 @@
 * Button Hold logic for Increment/Decrement Item Level
 * Fix "Loot Rule Sort Order" Button Functionality
 * Abstraction of the "Drop Down List" functionality
-* Auto-Master Loot Setting Options
-** Detect when leader switches and leader is set to self.
-** If option enabled change to masterloot with criteria
 * Sort Item Type List
 * Fix stange dropdown issues with objects below the dropdown
 
