@@ -3,10 +3,9 @@
 * "Duplicate Rule Set" Button
 * "Assignee Sort Order" Buttons
 * Button Hold logic for Increment/Decrement Item Level
-* Fix "Loot Rule Sort Order" Button Functionality
 * Abstraction of the "Drop Down List" functionality
 * Sort Item Type List
-* Fix stange dropdown issues with objects below the dropdown
+* Fix stange dropdown issues with objects below the dropdown on rule edit
 
 * Randomize Remaining button
 * Replace Masterloot window
@@ -17,17 +16,3 @@
 ** Can't radomize with one assignee
 ** Can't take all items of specific item types & quality pairs above of a specific quality
 ** Duplicate assignee name
-
-** Ignore Item Flag?
-Do not random these
---   -- Various desirable items
---   if strItemName == "Eldan Runic Module" or
---      strItemName == "Suspended Biophage Cluster" or
---      string.find(strItemName, "Archivos") or
---      string.find(strItemName, "Warplot Boss") or
---      string.match(strItemName, "Sign of %a+ - Eldan") or
---      string.find(strItemName, "Ground Mount") or
---      string.find(strItemName, "Hoverboard Mount") then
---     self:PrintDB("Can't random " .. strItemName .. " because of name")
---     return false
---   end

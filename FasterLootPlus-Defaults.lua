@@ -37,61 +37,185 @@ local tBaseLootRule = {
 }
 
 local tDefaultLootRules = {
-  ["1"] = {
+  [1] = {
     label = "Eldan Runic Modules",
     itemName = "^Eldan Runic Module$",
     itemType = nil,
     randomAssign = false,
-    patternMatch = true,
-    assignees = { [0] = "Milk Shakes" }
+    patternMatch = false,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
   },
-  ["2"] = {
+  [2] = {
     label = "Eldan Signs",
     itemName = "^Sign of %a+ %- Eldan$",
     itemType = nil,
     randomAssign = false,
-    patternMatch = true,
-    assignees = { [0] = "Horns NLegs" }
+    patternMatch = false,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
   },
-  ["3"] = {
+  [3] = {
     label = "Biophage Clusters",
     itemName = "^Suspended Biophage Cluster$",
     itemType = nil,
     randomAssign = false,
-    patternMatch = true,
-    assignees = { [0] = "Horns NLegs" }
+    patternMatch = false,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
   },
-  ["4"] = {
-    label = "Recipes",
-    itemName = "Archivos",
-    itemType = nil,
+  [4] = {
+    label = "Archivos Recipes",
+    itemName = "Archivos.*",
+    itemType = -10,
     randomAssign = false,
     patternMatch = true,
-    assignees = { [0] = "Horns NLegs" }
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
   },
-  ["5"] = {
-    label = "Cloth",
-    itemName = "Starloom",
-    itemType = nil,
-    randomAssign = false,
-    patternMatch = true,
-    assignees = { [0] = "Chimpii Evans" }
-  },
-  ["6"] = {
+  [5] = {
     label = "Primal Patterns",
     itemName = "Partial Primal Pattern",
     itemType = nil,
-    randomAssign = true,
+    randomAssign = false,
     patternMatch = false,
-    assignees = {}
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
   },
-  ["7"] = {
+  [6] = {
     label = "Eldan Gifts",
     itemName = "Tarnished Eldan Gift",
     itemType = nil,
+    randomAssign = false,
+    patternMatch = false,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
+  },
+  [7] = {
+    label = "Warplot Boss",
+    itemName = ".*Warplot Boss",
+    itemType = nil,
+    randomAssign = false,
+    patternMatch = true,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
+  },
+  [8] = {
+    label = "Hoverboard Mount",
+    itemName = ".*Hoverboard Mount",
+    itemType = nil,
+    randomAssign = false,
+    patternMatch = true,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
+  },
+  [9] = {
+    label = "Ground Mount",
+    itemName = ".*Ground Mount",
+    itemType = nil,
+    randomAssign = false,
+    patternMatch = true,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
+  },
+  [10] = {
+    label = "Trash Purples",
+    itemName = "",
+    itemType = nil,
     randomAssign = true,
     patternMatch = false,
-    assignees = {}
+    itemQuality = Item.CodeEnumItemQuality.Superb,
+    itemLevel = {
+      compareOp = "lte",
+      level = "55"
+    },
+    mode = "",
+    assignees = {},
+    enabled = true
+  },
+  [11] = {
+    label = "Trash Blues",
+    itemName = "",
+    itemType = nil,
+    randomAssign = true,
+    patternMatch = false,
+    itemQuality = Item.CodeEnumItemQuality.Excellent,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = {},
+    enabled = true
+  },
+  [12] = {
+    label = "Trash Greens",
+    itemName = "",
+    itemType = nil,
+    randomAssign = true,
+    patternMatch = false,
+    itemQuality = Item.CodeEnumItemQuality.Good,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = {},
+    enabled = true
   }
 }
 
@@ -101,7 +225,7 @@ FasterLootPlus.tItemTypeAggregates = {
   [-8] = { 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 53, 298, 299, 301 },
   [-7] = { 45, 46, 48, 51, 79, 204 },
   [-6] = { 328, 329, 336, 338, 361, 74, 285, 286, 291, 293, 347 },
-  [-5] = { 197, 198 },  -- TODO: All Crafting Mats
+  [-5] = { 197, 198, 202, 206, 207, 208, 211, 213, 214, 219, 221, 266, 268, 269, 270, 271 },  -- TODO: All Crafting Mats
   [-4] = { 155, 164 },
   [-3] = { 339, 340, 341, 342, 343, 344, 345 },
   [-2] = { 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491 },
@@ -146,6 +270,7 @@ FasterLootPlus.tItemTypes = {
   [79] = "Resonators",
   [134] = "Bag",
   [143] = "Untyped (Consumable/Flair/etc.)",
+  [153] = "Untyped (Usable Quest)",
   [155] = "Decor",
   [164] = "Improvement",
   [170] = "Untyped (Reputation Item)",
@@ -159,6 +284,7 @@ FasterLootPlus.tItemTypes = {
   [189] = "Costume - Hands",
   [197] = "Ore",
   [198] = "Herb",
+  [200] = "Treasure - Junk",
   [201] = "Tool - Mining",
   [202] = "Omni-Plasm",
   [204] = "Heavy Gun",
@@ -170,16 +296,17 @@ FasterLootPlus.tItemTypes = {
   [214] = "Relic Parts",
   [215] = "Gadget",
   [219] = "Wood",
-  [200] = "Treasure - Junk",
-  [208] = "Meat",
   [221] = "Produce",
   [226] = "Cloth Scraps - Junk",
   [227] = "Essence - Junk",
+  [228] = "Eyeball - Junk",
+  [230] = "Fin - Junk",
   [231] = "Fur - Junk",
   [232] = "Gland - Junk",
   [236] = "Knick-Knacks - Junk",
   [237] = "Metal Scraps - Junk",
   [246] = "Spores - Junk",
+  [249] = "Tooth - Junk",
   [250] = "Totem - Junk",
   [251] = "Tusk - Junk",
   [254] = "Tailor Pattern",
@@ -356,6 +483,10 @@ FasterLootPlus.tHarvestLootRules =
 }
 
 function FasterLootPlus:LoadDefaultLootRules()
+  local currentSet = self.settings.user.currentRuleSet
+  self.settings.ruleSets[currentSet].lootRules = deepcopy(tDefaultLootRules)
+  self:RebuildLootRuleItems()
+  self:RefreshUI()
 end
 
 function FasterLootPlus:GetBaseRule()

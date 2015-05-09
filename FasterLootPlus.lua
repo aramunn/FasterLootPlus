@@ -194,6 +194,8 @@ function FasterLootPlus:OnSlashCommand(cmd, params)
     end
   elseif args[1] == "show" then
     self.state.windows.main:Show(true)
+  elseif args[1] == "defaults" then
+    self:LoadDefaultLootRules()
   else
     Utils:cprint("FasterLootPlus v" .. self.settings.version)
     Utils:cprint("Usage:  /fasterloot <command>")
@@ -201,7 +203,7 @@ function FasterLootPlus:OnSlashCommand(cmd, params)
     Utils:cprint("   show           Open Rules Window")
     Utils:cprint("   debug          Toggle Debug")
     Utils:cprint("   debug update   Update the Window")
-    Utils:cprint("   reset          Clears All Rules and Sets and Resets")
+    Utils:cprint("   defaults       Loads default sample rules in current ruleset")
   end
 end
 

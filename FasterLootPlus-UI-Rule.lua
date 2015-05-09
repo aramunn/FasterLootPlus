@@ -193,25 +193,23 @@ function FasterLootPlus:OnMoveLootRuleDown( wndHandler, wndControl, eMouseButton
   local par = wndHandler:GetParent()
   local idx = par:GetData()
   if idx < size then
-    local temp = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx+1])
-    self.settings.ruleSets[currentSet].lootRules[idx+1] = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx])
-    self.settings.ruleSets[currentSet].lootRules[idx] = shallowcopy(temp)
+    local temp = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx])
+    self.settings.ruleSets[currentSet].lootRules[idx] = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx+1])
+    self.settings.ruleSets[currentSet].lootRules[idx+1] = shallowcopy(temp)
     self:RebuildLootRuleItems()
   end
 end
 
 function FasterLootPlus:OnMoveLootRuleUp( wndHandler, wndControl, eMouseButton )
-  function FasterLootPlus:OnMoveLootRuleDown( wndHandler, wndControl, eMouseButton )
-    local currentSet = self.settings.user.currentRuleSet
-    local size = #self.settings.ruleSets[currentSet].lootRules
-    local par = wndHandler:GetParent()
-    local idx = par:GetData()
-    if idx > 1 then
-      local temp = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx])
-      self.settings.ruleSets[currentSet].lootRules[idx] = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx-1])
-      self.settings.ruleSets[currentSet].lootRules[idx-1] = shallowcopy(temp)
-      self:RebuildLootRuleItems()
-    end
+  local currentSet = self.settings.user.currentRuleSet
+  local size = #self.settings.ruleSets[currentSet].lootRules
+  local par = wndHandler:GetParent()
+  local idx = par:GetData()
+  if idx > 1 then
+    local temp = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx])
+    self.settings.ruleSets[currentSet].lootRules[idx] = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx-1])
+    self.settings.ruleSets[currentSet].lootRules[idx-1] = shallowcopy(temp)
+    self:RebuildLootRuleItems()
   end
 end
 
@@ -413,6 +411,8 @@ function FasterLootPlus:AddLootRuleItem(index, item)
   local str = ""
   if item.randomAssign == true then
     str = "-Randomized-\n"
+  elseif item.randomAssign == false and #item.assignees < 1 then
+    str = "-Skip Item-"
   end
   str = str .. self:ListToLineSeperatedString(item.assignees)
   wnd:SetTooltip(str)
