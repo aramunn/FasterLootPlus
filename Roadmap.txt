@@ -1,7 +1,6 @@
 * Loot Rule Save validation
 ** "Stupid Rule" Warning on Validation
 * "Duplicate Rule Set" Button
-* "Assignee Sort Order" Buttons
 * Button Hold logic for Increment/Decrement Item Level
 * Abstraction of the "Drop Down List" functionality
 * Sort Item Type List

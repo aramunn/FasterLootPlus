@@ -310,7 +310,7 @@ end
 -- FasterLootPlus CompareItemName
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemName(item, rule)
-  if rule.itemName ~= nil then
+  if rule.itemName ~= nil and rule.itemName ~= "" then
     -- Use Pattern Matching to find the item if pattern mode is on, else use simple matching
     if rule.patternMatch == true then
       -- RegExp Match
@@ -360,13 +360,16 @@ function FasterLootPlus:ProcessItem(loot)
         -- Do something with the item and exit
         local looters = self:GetPossibleLooters(loot.tLooters, rule.assignees)
 
-        if rule.randomAssign == true and #looters <= 0 then
+        if rule.randomAssign == true and #rule.assignees <= 0 then
           -- No looters and random, random out the item
           self:AssignLoot(loot.nLootId, self:GetRandomLooter(loot.tLooters), item, "Random")
-        elseif rule.randomAssign == true and #looters > 0 then
+        elseif rule.randomAssign == true and #rule.assignees > 0 then
           -- Looters and random, random out to one of the designated looters
-          self:AssignLoot(loot.nLootId, self:GetRandomLooter(looters), item, "Random-Assigned")
-        elseif rule.randomAssign == true and #looters > 0 then
+          local lootr = self:GetRandomLooter(looters)
+          if lootr ~= nil then
+            self:AssignLoot(loot.nLootId, lootr, item, "Random-Assigned")
+          end
+        elseif rule.randomAssign == false and #looters > 0 then
           -- Not random but looters assigned, assign to first priority looter
           self:AssignLoot(loot.nLootId, looters[1], item, "Assigned")
         else

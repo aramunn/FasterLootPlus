@@ -409,12 +409,21 @@ function FasterLootPlus:AddLootRuleItem(index, item)
   wnd:FindChild("EnableRuleButton"):SetCheck(item.enabled)
 
   local str = ""
+  local strAsgn = self:ListToLineSeperatedString(item.assignees)
+
   if item.randomAssign == true then
     str = "-Randomized-\n"
+    if strAsgn ~= nil and strAsgn ~= "" then
+      wnd:SetBGColor(ApolloColor.new("Magenta"))
+    else
+      wnd:SetBGColor(ApolloColor.new("AttributeName"))
+    end
   elseif item.randomAssign == false and #item.assignees < 1 then
-    str = "-Skip Item-"
+    str = "-Defer Auto Assign-"
+    wnd:SetBGColor(ApolloColor.new("Red"))
   end
-  str = str .. self:ListToLineSeperatedString(item.assignees)
+
+  str = str .. strAsgn
   wnd:SetTooltip(str)
 
   table.insert(self.state.listItems.rules, wnd)

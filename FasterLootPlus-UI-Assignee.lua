@@ -93,6 +93,32 @@ function FasterLootPlus:CloseEditAssignee()
   self.state.windows.editAssignee = nil
 end
 
+
+function FasterLootPlus:OnMoveAssigneeDown( wndHandler, wndControl, eMouseButton )
+  local size = #self.state.currentAssignees
+  local par = wndHandler:GetParent()
+  local idx = par:GetData()
+  if idx < size then
+    local temp = shallowcopy(self.state.currentAssignees[idx])
+    self.state.currentAssignees[idx] = shallowcopy(self.state.currentAssignees[idx+1])
+    self.state.currentAssignees[idx+1] = shallowcopy(temp)
+    self:RebuildAssigneeItems()
+  end
+end
+
+function FasterLootPlus:OnMoveAssigneeUp( wndHandler, wndControl, eMouseButton )
+  local size = #self.state.currentAssignees
+  local par = wndHandler:GetParent()
+  local idx = par:GetData()
+  if idx > 1 then
+    local temp = shallowcopy(self.state.currentAssignees[idx])
+    self.state.currentAssignees[idx] = shallowcopy(self.state.currentAssignees[idx-1])
+    self.state.currentAssignees[idx-1] = shallowcopy(temp)
+    self:RebuildAssigneeItems()
+  end
+end
+
+
 ---------------------------------------------------------------------------------------------------
 -- FasterLootPlus UI Maintenance Functions
 ---------------------------------------------------------------------------------------------------

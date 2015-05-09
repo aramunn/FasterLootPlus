@@ -48,11 +48,11 @@ end
 
 function FasterLootPlus:OnToggleRuleSetWindow( wndHandler, wndControl, eMouseButton )
   local checked = wndControl:IsChecked()
-  if checked then
-    wndControl:SetText("˂˂˂")
-  else
-    wndControl:SetText("˃˃˃")
-  end
+  -- if checked then
+  --   wndControl:SetText("˂˂˂")
+  -- else
+  --   wndControl:SetText("˃˃˃")
+  -- end
   self.state.isRuleSetOpen = checked
   self.state.windows.ruleSets:Show(self.state.isRuleSetOpen)
 end
