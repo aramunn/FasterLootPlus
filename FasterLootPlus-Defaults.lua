@@ -485,9 +485,11 @@ FasterLootPlus.tHarvestLootRules =
   [GroupLib.HarvestLootRule.RoundRobin] 		= Apollo.GetString("Group_RoundRobin"),
 }
 
-function FasterLootPlus:LoadDefaultLootRules()
-  local currentSet = self.settings.user.currentRuleSet
-  self.settings.ruleSets[currentSet].lootRules = deepcopy(tDefaultLootRules)
+function FasterLootPlus:LoadDefaultLootRules(set)
+  if set == nil then
+    set = self.settings.user.currentRuleSet
+  end
+  self.settings.ruleSets[set].lootRules = deepcopy(tDefaultLootRules)
   self:RebuildLootRuleItems()
   self:RefreshUI()
 end

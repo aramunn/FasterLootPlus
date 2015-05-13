@@ -18,7 +18,7 @@ require "ChatSystemLib"
 -- FasterLootPlus Module Definition
 -----------------------------------------------------------------------------------------------
 local FasterLootPlus = {}
-local Utils = {}
+local Utils = Apollo.GetPackage("SimpleUtils-1.0").tPackage
 
 local addonCRBML = Apollo.GetAddon("MasterLoot")
 
@@ -140,7 +140,7 @@ function FasterLootPlus:OnLoad()
   self.xmlDoc = XmlDoc.CreateFromFile("FasterLootPlus.xml")
   self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-  Utils = Apollo.GetPackage("SimpleUtils-1.0").tPackage
+
 
   Apollo.RegisterEventHandler("Generic_ToggleFasterLootPlus", "OnToggleFasterLootPlus", self)
   Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
@@ -422,6 +422,11 @@ function FasterLootPlus:OnRestore(eType, tSavedData)
       if self.settings[key] == nil then
         self.settings[key] = deepcopy(tDefaultSettings[key])
       end
+    end
+
+    -- Check to see if there are any loot rules loaded for the default ruleset, if there are not then load the default rules.
+    if #self.settings.ruleSets[0].lootRules <= 0 then
+      self:LoadDefaultLootRules(0)
     end
 
     -- This section is for converting between versions that saved data differently

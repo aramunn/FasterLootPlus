@@ -412,15 +412,18 @@ function FasterLootPlus:AddLootRuleItem(index, item)
   local strAsgn = self:ListToLineSeperatedString(item.assignees)
 
   if item.randomAssign == true then
-    str = "-Randomized-\n"
     if strAsgn ~= nil and strAsgn ~= "" then
+      str = "-Random Priority Looter-\n"
       wnd:SetBGColor(ApolloColor.new("Magenta"))
     else
+      str = "-Random Looter-"
       wnd:SetBGColor(ApolloColor.new("AttributeName"))
     end
   elseif item.randomAssign == false and #item.assignees < 1 then
     str = "-Defer Auto Assign-"
     wnd:SetBGColor(ApolloColor.new("Red"))
+  else
+    str = "-Priority Looter-\n"
   end
 
   str = str .. strAsgn
