@@ -91,6 +91,7 @@ local tDefaultState = {
     isInRaid = false,
     isInDungeon = false,
     isLeader = false,
+    lootSetSinceLeader = false,
     currentContinent = 0,
     name = ""
   },
@@ -158,7 +159,7 @@ function FasterLootPlus:OnDocLoaded()
   end
 
   -- Delayed timer to fix Carbine's MasterLoot on /reloadui
-  Apollo.RegisterTimerHandler("FixCRBML_Delay", "FixCRBML", self)
+  --Apollo.RegisterTimerHandler("FixCRBML_Delay", "FixCRBML", self)
 
   Apollo.RegisterEventHandler("MasterLootUpdate", "OnMasterLootUpdate", self)
 
@@ -330,7 +331,7 @@ end
 -- FasterLootPlus CompareItemQuality
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemQuality(item, rule)
-  if rule.itemQuality ~= nil then
+  if rule.itemQuality ~= nil and rule.itemQuality ~= "" then
     if item.quality ~= rule.itemQuality then return false end
   end
   return true
@@ -438,11 +439,11 @@ function FasterLootPlus:OnRestore(eType, tSavedData)
     self.tConfig = deepcopy(tDefaultOptions)
   end
 
-  if #self.tOldMasterLootList > 0 and addonCRBML ~= nil then
-    -- Try every second to bring the window back up...
-    Apollo.CreateTimer("FixCRBML_Delay", 1, false)
-    Apollo.StartTimer("FixCRBML_Delay")
-  end
+  -- if #self.tOldMasterLootList > 0 and addonCRBML ~= nil then
+  --   -- Try every second to bring the window back up...
+  --   Apollo.CreateTimer("FixCRBML_Delay", 1, false)
+  --   Apollo.StartTimer("FixCRBML_Delay")
+  -- end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -450,27 +451,32 @@ end
 -----------------------------------------------------------------------------------------------
 -- This function is called on a timer from OnRestore to attempt to open Carbine's MasterLoot addon,
 -- which doesn't automatically open if loot exists
-function FasterLootPlus:FixCRBML()
-  -- Hack, Carbine's ML OnLoad sets this field
-  -- We use it to determine when Carbine is done loading
-  if addonCRBML.tOld_MasterLootList ~= nil then
-    self:PrintDB("Trying to open up MasterLoot!")
-    addonCRBML:OnMasterLootUpdate(true)
-    self:OnMasterLootUpdate(false)
-  else
-    self:PrintDB("MasterLoot not ready, trying again")
-    Apollo.CreateTimer("FixCRBML_Delay", 1, false)
-    Apollo.StartTimer("FixCRBML_Delay")
-  end
-end
+-- function FasterLootPlus:FixCRBML()
+--   -- Hack, Carbine's ML OnLoad sets this field
+--   -- We use it to determine when Carbine is done loading
+--   if addonCRBML.tOld_MasterLootList ~= nil then
+--     self:PrintDB("Trying to open up MasterLoot!")
+--     addonCRBML:OnMasterLootUpdate(true)
+--     self:OnMasterLootUpdate(false)
+--   else
+--     self:PrintDB("MasterLoot not ready, trying again")
+--     Apollo.CreateTimer("FixCRBML_Delay", 1, false)
+--     Apollo.StartTimer("FixCRBML_Delay")
+--   end
+-- end
 
 -----------------------------------------------------------------------------------------------
 -- FasterLootPlus Group Update Logic
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:OnGroupUpdated()
+  local oldState = self.state.player.isLeader
   self.state.player.isLeader = GroupLib.AmILeader()
-  if self.state.player.isLeader == true then
+  if oldState == false and self.state.player.isLeader == true then
     self:OnZoneChanging()
+  elseif self.state.player.isLeader == false then
+    self.state.player.lootSetSinceLeader = false
+  else
+    -- Do Nothing
   end
 end
 
@@ -490,6 +496,7 @@ function FasterLootPlus:OnZoneChanging()
     self.state.player.isInRaid = self:IsRaidContinent(self.state.player.currentContinent)
     self.state.player.isInDungeon = self:IsRaidContinent(self.state.player.currentContinent)
   end
+  self.state.player.lootSetSinceLeader = false
   self:ProcessOptions()
 end
 
@@ -504,12 +511,20 @@ function FasterLootPlus:ProcessOptions()
   end
 
   -- If we're the leader and the functionality is currently enabled then process the options
-  if self.state.player.isLeader == true and self.settings.user.isEnabled then
+  if self.state.player.isLeader == true and self.settings.user.isEnabled and not self.state.player.lootSetSinceLeader then
     -- The option for master loot is enabled then check if we're in the correct instance types
     if self.settings.options.autoSetMasterLootWhenLeading == true then
-      local curLootRule = GroupLib.GetLootRules()
-      GroupLib.SetLootRules(self.settings.options.masterLootRule, GroupLib.LootRule.Master, self.settings.options.masterLootQualityThreshold, curLootRule.eHarvestRule)
+      self:SetGroupLootRules()
+      self.state.player.lootSetSinceLeader = true
     end
+  end
+end
+
+function FasterLootPlus:SetGroupLootRules()
+  local curLootRule = GroupLib.GetLootRules()
+  -- Only change the loot settings if they are not the same as what is currently set
+  if curLootRule.eNormalRule ~= self.settings.options.masterLootRule and curLootRule.eThresholdRule ~= GroupLib.LootRule.Master and curLootRule.eThresholdQuality ~= self.settings.options.masterLootQualityThreshold then
+    GroupLib.SetLootRules(self.settings.options.masterLootRule, GroupLib.LootRule.Master, self.settings.options.masterLootQualityThreshold, curLootRule.eHarvestRule)
   end
 end
 

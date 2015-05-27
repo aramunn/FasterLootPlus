@@ -57,8 +57,10 @@ function FasterLootPlus:OnOptionsSave( wndHandler, wndControl, eMouseButton )
   self.settings.options.autoDisableUponExitInstance = self.state.windows.options:FindChild("AutoDisableButton"):IsChecked()
   self.settings.options.masterLootRule  = self.state.windows.options:FindChild("PartyLootRuleSelection"):GetData()
   self.settings.options.masterLootQualityThreshold = self.state.windows.options:FindChild("ThresholdSelection"):GetData()
-
   self:CloseOptions()
+  -- Update addon state based on new settings
+  self.state.player.lootSetSinceLeader = false
+  self:ProcessOptions()
 end
 
 function FasterLootPlus:OnOptionsCancel( wndHandler, wndControl, eMouseButton )
