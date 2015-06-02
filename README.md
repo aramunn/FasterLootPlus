@@ -84,7 +84,7 @@ Dumps the contents of a table to the debug chat channel. The indent value is the
   vardump(tbl, 1)
 ```
 
-Results"
+Results:
 ```
 [Debug]: tbl
 [Debug]: a: 123
@@ -98,14 +98,15 @@ Returns: string
 
 ```lua
   local tbl = { a = "123", b = "456" }
-  vardump(tbl, 1)
+  local dump = svardump(tbl, 1)
+  print dump
 ```
 
-Results"
+Results:
 ```
-[Debug]: tbl
-[Debug]: a: 123
-[Debug]: b: 456
+tbl
+a: 123
+b: 456
 ```
 
 ## Chat Printing
