@@ -25,10 +25,8 @@ local addonCRBML = Apollo.GetAddon("MasterLoot")
 -----------------------------------------------------------------------------------------------
 -- FasterLootPlus constants
 -----------------------------------------------------------------------------------------------
-local MajorVersion = 1
-local MinorVersion = 0
-local PatchVersion = 1
-local FASTERLOOTPLUS_CURRENT_VERSION = "" .. tostring(MajorVersion) .. "." .. tostring(MinorVersion) .. "." .. tostring(PatchVersion)
+local Major, Minor, Patch, Suffix = 1, 0, 2, 0
+local FASTERLOOTPLUS_CURRENT_VERSION = string.format("%d.%d.%d", Major, Minor, Patch)
 
 local tDefaultSettings = {
   version = FASTERLOOTPLUS_CURRENT_VERSION,
@@ -216,7 +214,7 @@ end
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:OnInterfaceMenuListHasLoaded()
   Event_FireGenericEvent("InterfaceMenuList_NewAddOn", "FasterLootPlus", {"Generic_ToggleFasterLootPlus", "", "FasterLootPlusSprites:FastCoins32"})
-  Event_FireGenericEvent("OneVersion_ReportAddonInfo", "FasterLootPlus", MajorVersion, MinorVersion, PatchVersion, false)
+  Event_FireGenericEvent("OneVersion_ReportAddonInfo", "FasterLootPlus", Major, Minor, Patch, Suffix, false)
 end
 
 -----------------------------------------------------------------------------------------------
