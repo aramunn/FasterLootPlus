@@ -25,7 +25,7 @@ local addonCRBML = Apollo.GetAddon("MasterLoot")
 -----------------------------------------------------------------------------------------------
 -- FasterLootPlus constants
 -----------------------------------------------------------------------------------------------
-local Major, Minor, Patch, Suffix = 1, 0, 2, 0
+local Major, Minor, Patch, Suffix = 0, 7, 5, -1
 local FASTERLOOTPLUS_CURRENT_VERSION = string.format("%d.%d.%d", Major, Minor, Patch)
 
 local tDefaultSettings = {
