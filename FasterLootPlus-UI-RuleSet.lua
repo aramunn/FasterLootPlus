@@ -99,7 +99,7 @@ function FasterLootPlus:OnEditRuleSetSave( wndHandler, wndControl, eMouseButton 
     self.settings.ruleSets[idx].label = label
   else
     -- Add New Item
-    local item = shallowcopy(self:GetBaseRuleSet())
+    local item = deepcopy(self:GetBaseRuleSet())
     item.label = label
     table.insert(self.settings.ruleSets, item)
   end

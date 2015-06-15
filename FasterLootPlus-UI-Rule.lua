@@ -91,7 +91,7 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function FasterLootPlus:OnEditLootRuleSave( wndHandler, wndControl, eMouseButton )
-  local item = shallowcopy(self:GetBaseRule())
+  local item = deepcopy(self:GetBaseRule())
   -- Pull values from form and assign them to the item
   item.label = self.state.windows.editLootRule:FindChild("RuleLabel"):FindChild("Text"):GetText()
   item.itemName = self.state.windows.editLootRule:FindChild("ItemName"):FindChild("Text"):GetText()
@@ -193,9 +193,9 @@ function FasterLootPlus:OnMoveLootRuleDown( wndHandler, wndControl, eMouseButton
   local par = wndHandler:GetParent()
   local idx = par:GetData()
   if idx < size then
-    local temp = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx])
-    self.settings.ruleSets[currentSet].lootRules[idx] = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx+1])
-    self.settings.ruleSets[currentSet].lootRules[idx+1] = shallowcopy(temp)
+    local temp = deepcopy(self.settings.ruleSets[currentSet].lootRules[idx])
+    self.settings.ruleSets[currentSet].lootRules[idx] = deepcopy(self.settings.ruleSets[currentSet].lootRules[idx+1])
+    self.settings.ruleSets[currentSet].lootRules[idx+1] = deepcopy(temp)
     self:RebuildLootRuleItems()
   end
 end
@@ -206,9 +206,9 @@ function FasterLootPlus:OnMoveLootRuleUp( wndHandler, wndControl, eMouseButton )
   local par = wndHandler:GetParent()
   local idx = par:GetData()
   if idx > 1 then
-    local temp = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx])
-    self.settings.ruleSets[currentSet].lootRules[idx] = shallowcopy(self.settings.ruleSets[currentSet].lootRules[idx-1])
-    self.settings.ruleSets[currentSet].lootRules[idx-1] = shallowcopy(temp)
+    local temp = deepcopy(self.settings.ruleSets[currentSet].lootRules[idx])
+    self.settings.ruleSets[currentSet].lootRules[idx] = deepcopy(self.settings.ruleSets[currentSet].lootRules[idx-1])
+    self.settings.ruleSets[currentSet].lootRules[idx-1] = deepcopy(temp)
     self:RebuildLootRuleItems()
   end
 end

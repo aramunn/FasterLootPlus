@@ -99,9 +99,9 @@ function FasterLootPlus:OnMoveAssigneeDown( wndHandler, wndControl, eMouseButton
   local par = wndHandler:GetParent()
   local idx = par:GetData()
   if idx < size then
-    local temp = shallowcopy(self.state.currentAssignees[idx])
-    self.state.currentAssignees[idx] = shallowcopy(self.state.currentAssignees[idx+1])
-    self.state.currentAssignees[idx+1] = shallowcopy(temp)
+    local temp = deepcopy(self.state.currentAssignees[idx])
+    self.state.currentAssignees[idx] = deepcopy(self.state.currentAssignees[idx+1])
+    self.state.currentAssignees[idx+1] = deepcopy(temp)
     self:RebuildAssigneeItems()
   end
 end
@@ -111,9 +111,9 @@ function FasterLootPlus:OnMoveAssigneeUp( wndHandler, wndControl, eMouseButton )
   local par = wndHandler:GetParent()
   local idx = par:GetData()
   if idx > 1 then
-    local temp = shallowcopy(self.state.currentAssignees[idx])
-    self.state.currentAssignees[idx] = shallowcopy(self.state.currentAssignees[idx-1])
-    self.state.currentAssignees[idx-1] = shallowcopy(temp)
+    local temp = deepcopy(self.state.currentAssignees[idx])
+    self.state.currentAssignees[idx] = deepcopy(self.state.currentAssignees[idx-1])
+    self.state.currentAssignees[idx-1] = deepcopy(temp)
     self:RebuildAssigneeItems()
   end
 end

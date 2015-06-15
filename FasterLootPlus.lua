@@ -108,9 +108,9 @@ function FasterLootPlus:new(o)
   self.__index = self
 
   -- Saved and Restored values are stored here.
-  o.settings = shallowcopy(tDefaultSettings)
+  o.settings = deepcopy(tDefaultSettings)
   -- Volatile values are stored here. These are impermenant and not saved between sessions
-  o.state = shallowcopy(tDefaultState)
+  o.state = deepcopy(tDefaultState)
 
   return o
 end
@@ -126,9 +126,9 @@ function FasterLootPlus:Init()
   }
   Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
 
-  self.settings = shallowcopy(tDefaultSettings)
+  self.settings = deepcopy(tDefaultSettings)
   -- Volatile values are stored here. These are impermenant and not saved between sessions
-  self.state = shallowcopy(tDefaultState)
+  self.state = deepcopy(tDefaultState)
 
   self.tOldMasterLootList = {}
 end
