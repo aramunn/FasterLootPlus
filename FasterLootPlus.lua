@@ -31,6 +31,7 @@ local FASTERLOOTPLUS_CURRENT_VERSION = string.format("%d.%d.%d", Major, Minor, P
 local tDefaultSettings = {
   version = FASTERLOOTPLUS_CURRENT_VERSION,
   debug = false,
+  fieldTestMode = true,
   user = {
     savedWndLoc = {},
     isEnabled = true,
