@@ -28,6 +28,26 @@ ItemHelper.ItemTypeGroup = {
   Upgrade = -17
 }
 
+ItemHelper.ItemTypeGroupNames = {
+  [ItemHelper.ItemTypeGroup.Rune] = "Rune",
+  [ItemHelper.ItemTypeGroup.Token] = "Token",
+  [ItemHelper.ItemTypeGroup.Element] = "Element",
+  [ItemHelper.ItemTypeGroup.Housing] = "Housing",
+  [ItemHelper.ItemTypeGroup.Crafting] = "Crafting",
+  [ItemHelper.ItemTypeGroup.Consumable] = "Consumable",
+  [ItemHelper.ItemTypeGroup.Weapon] = "Weapon",
+  [ItemHelper.ItemTypeGroup.Armor] = "Armor",
+  [ItemHelper.ItemTypeGroup.Costume] = "Costume",
+  [ItemHelper.ItemTypeGroup.Recipe] = "Recipe",
+  [ItemHelper.ItemTypeGroup.Junk] = "Junk",
+  [ItemHelper.ItemTypeGroup.Quest] = "Quest",
+  [ItemHelper.ItemTypeGroup.Rewards] = "Rewards",
+  [ItemHelper.ItemTypeGroup.PVP] = "PVP",
+  [ItemHelper.ItemTypeGroup.Vanity] = "Vanity",
+  [ItemHelper.ItemTypeGroup.Attunement] = "Attunement",
+  [ItemHelper.ItemTypeGroup.Upgrade] = "Upgrade"
+}
+
 ItemHelper.ItemTypeGroupLookup = {
   [ItemHelper.ItemTypeGroup.Rune] = { 359, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 465 },
   [ItemHelper.ItemTypeGroup.Token] = { 467, 468, 469, 470, 471, 472, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494 },
