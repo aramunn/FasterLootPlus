@@ -1,11 +1,12 @@
-local S_MAJOR, S_MINOR = "SimpleUtils-1.0", 2
-local S_Pkg = Apollo.GetPackage(S_MAJOR)
-if S_Pkg and (S_Pkg.nVersion or 0) >= S_MINOR then
+local PackageName, Major, Minor, Patch = "SimpleUtils", 2, 0, 0
+local PkgMajor, PkgMinor = PackageName, tonumber(sting.format("%02d%02d%02d", Major, Minor, Patch))
+local Pkg = Apollo.GetPackage(PkgMajor)
+if Pkg and (Pkg.nVersion or 0) >= PkgMinor then
   return -- no upgrade needed
 end
 
 -- Set a reference to the actual package or create an empty table
-local SimpleUtils = S_Pkg and S_Pkg.tPackage or {}
+local SimpleUtils = Pkg and Pkg.tPackage or {}
 
 function SimpleUtils:new(args)
    local new = { }
@@ -129,4 +130,4 @@ function svardump (tbl, indent)
   return str
 end
 
-Apollo.RegisterPackage(SimpleUtils, S_MAJOR, S_MINOR, {})
+Apollo.RegisterPackage(SimpleUtils, PkgMajor, PkgMinor, {})
