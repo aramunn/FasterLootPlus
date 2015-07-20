@@ -1,9 +1,10 @@
 local PackageName, Major, Minor, Patch = "ItemHelper", 1, 0, 0
-local PkgMajor, PkgMinor = PackageName, tonumber(sting.format("%02d%02d%02d", Major, Minor, Patch))
+local PkgMajor, PkgMinor = PackageName, tonumber(string.format("%02d%02d%02d", Major, Minor, Patch))
 local Pkg = Apollo.GetPackage(PkgMajor)
 if Pkg and (Pkg.nVersion or 0) >= PkgMinor then
   return -- no upgrade needed
 end
+
 
 -- Set a reference to the actual package or create an empty table
 local ItemHelper = Pkg and Pkg.tPackage or {}
@@ -387,9 +388,12 @@ ItemHelper.ItemTypes = {
 
 function ItemHelper:IsItemTypeOfGroup(typeID, groupID)
   local test = false
-  for k,v in pairs(ItemHelper.ItemTypeGroupLookup[groupID]) do
-    if v == typeID then
-      test = true
+  local group = ItemHelper.ItemTypeGroupLookup[groupID]
+  if group then
+    for k,v in pairs(group) do
+      if v == typeID then
+        test = true
+      end
     end
   end
   return test
