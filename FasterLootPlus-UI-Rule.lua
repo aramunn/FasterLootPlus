@@ -16,6 +16,7 @@ require "GameLib"
 
 local FasterLootPlus = Apollo.GetAddon("FasterLootPlus")
 local Info = Apollo.GetAddonInfo("FasterLootPlus")
+local ItemHelper = Apollo.GetPackage("ItemHelper").tPackage
 
 ---------------------------------------------------------------------------------------------------
 -- FasterLootPlus Rules UI Functions
@@ -53,7 +54,7 @@ function FasterLootPlus:CreateEditLootRuleWindow( wndHandler )
       self.state.windows.editLootRule:FindChild("RuleLabel"):FindChild("Text"):SetText(item.label)
       self.state.windows.editLootRule:FindChild("ItemName"):FindChild("Text"):SetText(item.itemName)
       self.state.windows.editLootRule:FindChild("ItemType"):FindChild("ItemTypeSelection"):SetData(item.itemType)
-      self.state.windows.editLootRule:FindChild("ItemType"):FindChild("ItemTypeSelection"):SetText(self.tItemTypes[item.itemType])
+      self.state.windows.editLootRule:FindChild("ItemType"):FindChild("ItemTypeSelection"):SetText(self:GetAggregatedItemTypeName(item.itemType))
       self.state.windows.editLootRule:FindChild("ItemQuality"):FindChild("QualityTypeSelection"):SetData(item.itemQuality)
       if item.itemQuality ~= nil then
         self.state.windows.editLootRule:FindChild("ItemQuality"):FindChild("QualityTypeSelection"):SetText(self.tItemQuality[item.itemQuality].Name)
@@ -241,9 +242,18 @@ function FasterLootPlus:PopulateItemTypeDropdown()
   local wnd = self:CreateDownListItem(nil, "", listItemName, dropdown)
   table.insert(list, wnd)
   -- Loop through remaining items
-  --for key,value in pairs(FasterLootPlus.tItemTypes) do
-  for i = -100, 500, 1 do
-    local v = FasterLootPlus.tItemTypes[i]
+  -- Add Aggregate Groups
+  for i = -20, -1, 1 do
+    local v = ItemHelper.ItemTypeGroupNames[i]
+    if v then
+      local title = "- All " .. v .. " -"
+      local wnd = self:CreateDownListItem(i, title, listItemName, dropdown)
+      table.insert(list, wnd)
+    end
+  end
+  -- Add Normal Types
+  for i = 1, 500, 1 do
+    local v = ItemHelper.ItemTypes[i]
     if v then
       local wnd = self:CreateDownListItem(i, v, listItemName, dropdown)
       table.insert(list, wnd)
@@ -374,6 +384,7 @@ function FasterLootPlus:IncItemLevel( wndHandler, wndControl, eMouseButton )
   txt:SetText(tostring(value))
 end
 
+
 ---------------------------------------------------------------------------------------------------
 -- FasterLootPlus Rule UI Maintenance Functions
 ---------------------------------------------------------------------------------------------------
@@ -393,7 +404,7 @@ function FasterLootPlus:AddLootRuleItem(index, item)
   else
     wnd:FindChild("Pattern"):SetText(item.itemName)
   end
-  wnd:FindChild("Type"):SetText(self.tItemTypes[item.itemType])
+  wnd:FindChild("Type"):SetText(self:GetAggregatedItemTypeName(item.itemType))
   if item.itemQuality ~= nil then
     wnd:FindChild("Quality"):SetText(self.tItemQuality[item.itemQuality].Name)
     wnd:FindChild("Quality"):SetTextColor(ApolloColor.new(self.tItemQuality[item.itemQuality].Color))

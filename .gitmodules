@@ -1,0 +1,12 @@
+[submodule "lib/ZoneHelper"]
+	path = lib/ZoneHelper
+	url = https://github.com/NexusInstruments/ZoneHelper.git
+[submodule "lib/RegExpUtils"]
+	path = lib/RegExpUtils
+	url = https://github.com/NexusInstruments/RegExpUtils.git
+[submodule "lib/SimpleUtils"]
+	path = lib/SimpleUtils
+	url = https://github.com/NexusInstruments/SimpleUtils.git
+[submodule "lib/ItemHelper"]
+	path = lib/ItemHelper
+	url = https://github.com/NexusInstruments/ItemHelper.git

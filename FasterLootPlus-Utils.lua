@@ -15,6 +15,8 @@ require "Window"
 local FasterLootPlus = Apollo.GetAddon("FasterLootPlus")
 local Info = Apollo.GetAddonInfo("FasterLootPlus")
 
+local ItemHelper = Apollo.GetPackage("ItemHelper").tPackage
+
 -----------------------------------------------------------------------------------------------
 -- Wrappers for debug functionality
 -----------------------------------------------------------------------------------------------
@@ -79,4 +81,16 @@ function FasterLootPlus:CompareOp(op, a, b)
     end
   end
   return true
+end
+
+function FasterLootPlus:GetAggregatedItemTypeName(type)
+  if type then
+    if type < 0 then
+      return "- All " .. ItemHelper.ItemTypeGroupNames[type] .. " -"
+    else
+      return ItemHelper.ItemTypes[type]
+    end
+  else
+    return ""
+  end
 end

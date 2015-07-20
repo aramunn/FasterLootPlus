@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Addon Author="Chronosis" APIVersion="10" Name="FasterLootPlus" Description=""  Version="1.0.0">
-  <Script Name="lib/SimpleUtils-1.0.lua"/>
-  <Script Name="lib/RegExp-1.0.lua"/>
+  <Script Name="lib/SimpleUtils/SimpleUtils.lua"/>
+  <Script Name="lib/RegExpUtils/RegExpUtils.lua"/>
+  <Script Name="lib/ItemHelper/ItemHelper.lua"/>
+  <Script Name="lib/ZoneHelper/ZoneHelper.lua"/>
   <Script Name="Dropdown.lua"/>
   <Form Name="Dropdown.xml"/>
   <Script Name="FasterLootPlus.lua"/>

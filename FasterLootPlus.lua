@@ -18,7 +18,8 @@ require "ChatSystemLib"
 -- FasterLootPlus Module Definition
 -----------------------------------------------------------------------------------------------
 local FasterLootPlus = {}
-local Utils = Apollo.GetPackage("SimpleUtils-1.0").tPackage
+local Utils = Apollo.GetPackage("SimpleUtils").tPackage
+local RegExp = Apollo.GetPackage("RegExpUtils").tPackage
 
 local addonCRBML = Apollo.GetAddon("MasterLoot")
 
@@ -293,14 +294,7 @@ function FasterLootPlus:CompareItemType(item, rule)
   if rule.itemType ~= nil then
     -- Check if the rule is an aggregate type
     if rule.itemType < 0 then
-      -- Get the Aggregate Rules Table
-      local tAggregate = tItemTypeAggregates[rule.itemType]
-      -- Loop through all the items
-      for key,value in pairs(tAggregate) do
-        -- Check if the item type matches one of the aggregate rules
-        if item.type == value then return true end
-      end
-      return false
+      return ItemHelper:IsItemTypeOfGroup(item.type, rule.itemType)
     else
       -- Check if the item type matches one the rule
       if item.type == rule.itemType then return true end
