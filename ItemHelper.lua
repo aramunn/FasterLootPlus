@@ -5,6 +5,9 @@ if Pkg and (Pkg.nVersion or 0) >= PkgMinor then
   return -- no upgrade needed
 end
 
+-- Set a reference to the actual package or create an empty table
+local ItemHelper = Pkg and Pkg.tPackage or {}
+
 ItemHelper.ItemTypeGroup = {
   Rune = -1,
   Token = -2,
@@ -380,4 +383,4 @@ function ItemHelper:IsItemOfGroup(item, groupID)
   return ItemHelper:IsItemTypeOfGroup(item.type, groupID)
 end
 
-Apollo.RegisterPackage(ZoneHelper, PkgMajor, PkgMinor, {})
+Apollo.RegisterPackage(ItemHelper, PkgMajor, PkgMinor, {})
