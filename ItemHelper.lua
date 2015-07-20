@@ -5,6 +5,9 @@ if Pkg and (Pkg.nVersion or 0) >= PkgMinor then
   return -- no upgrade needed
 end
 
+-- Set a reference to the actual package or create an empty table
+local ItemHelper = Pkg and Pkg.tPackage or {}
+
 ItemHelper.ItemTypeGroup = {
   Rune = -1,
   Token = -2,
@@ -23,6 +26,26 @@ ItemHelper.ItemTypeGroup = {
   Vanity = -15,
   Attunement = -16,
   Upgrade = -17
+}
+
+ItemHelper.ItemTypeGroupNames = {
+  [ItemHelper.ItemTypeGroup.Rune] = "Rune",
+  [ItemHelper.ItemTypeGroup.Token] = "Token",
+  [ItemHelper.ItemTypeGroup.Element] = "Element",
+  [ItemHelper.ItemTypeGroup.Housing] = "Housing",
+  [ItemHelper.ItemTypeGroup.Crafting] = "Crafting",
+  [ItemHelper.ItemTypeGroup.Consumable] = "Consumable",
+  [ItemHelper.ItemTypeGroup.Weapon] = "Weapon",
+  [ItemHelper.ItemTypeGroup.Armor] = "Armor",
+  [ItemHelper.ItemTypeGroup.Costume] = "Costume",
+  [ItemHelper.ItemTypeGroup.Recipe] = "Recipe",
+  [ItemHelper.ItemTypeGroup.Junk] = "Junk",
+  [ItemHelper.ItemTypeGroup.Quest] = "Quest",
+  [ItemHelper.ItemTypeGroup.Rewards] = "Rewards",
+  [ItemHelper.ItemTypeGroup.PVP] = "PVP",
+  [ItemHelper.ItemTypeGroup.Vanity] = "Vanity",
+  [ItemHelper.ItemTypeGroup.Attunement] = "Attunement",
+  [ItemHelper.ItemTypeGroup.Upgrade] = "Upgrade"
 }
 
 ItemHelper.ItemTypeGroupLookup = {
@@ -380,4 +403,4 @@ function ItemHelper:IsItemOfGroup(item, groupID)
   return ItemHelper:IsItemTypeOfGroup(item.type, groupID)
 end
 
-Apollo.RegisterPackage(ZoneHelper, PkgMajor, PkgMinor, {})
+Apollo.RegisterPackage(ItemHelper, PkgMajor, PkgMinor, {})
