@@ -20,6 +20,7 @@ require "ChatSystemLib"
 local FasterLootPlus = {}
 local Utils = Apollo.GetPackage("SimpleUtils").tPackage
 local RegExp = Apollo.GetPackage("RegExpUtils").tPackage
+local ZoneHelper = Apollo.GetPackage("ZoneHelper").tPackage
 
 local addonCRBML = Apollo.GetAddon("MasterLoot")
 
@@ -477,21 +478,12 @@ function FasterLootPlus:OnGroupUpdated()
   end
 end
 
-function FasterLootPlus:IsRaidContinent(nContinentId)
-  return nContinentId == 52 or nContinentId == 67
-end
-
-function FasterLootPlus:IsDungeonContinent(nContinentId)
-  return nContinentId == 27 or nContinentId == 28 or nContinentId == 25 or nContinentId == 16 or nContinentId == 17 or nContinentId == 23
-    or nContinentId == 15 or nContinentId == 13 or nContinentId == 14 or nContinentId == 48
-end
-
 function FasterLootPlus:OnZoneChanging()
   local zoneMap = GameLib.GetCurrentZoneMap()
   if zoneMap and zoneMap.continentId then
     self.state.player.currentContinent = zoneMap.continentId
-    self.state.player.isInRaid = self:IsRaidContinent(self.state.player.currentContinent)
-    self.state.player.isInDungeon = self:IsRaidContinent(self.state.player.currentContinent)
+    self.state.player.isInRaid = ZoneHelper:IsContinentRaid(self.state.player.currentContinent)
+    self.state.player.isInDungeon = ZoneHelper:IsContinentDungeon(self.state.player.currentContinent)
   end
   self.state.player.lootSetSinceLeader = false
   self:ProcessOptions()
