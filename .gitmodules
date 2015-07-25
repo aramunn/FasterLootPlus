@@ -10,3 +10,6 @@
 [submodule "lib/ItemHelper"]
 	path = lib/ItemHelper
 	url = https://github.com/NexusInstruments/ItemHelper.git
+[submodule "lib/RaidMemberHelper"]
+	path = lib/RaidMemberHelper
+	url = https://github.com/NexusInstruments/RaidMemberHelper.git
