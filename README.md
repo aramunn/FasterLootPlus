@@ -120,7 +120,5 @@ Prints the string to the Command channel
 ### SimpleUtils:pprint(string)
 Prints the string to the Party Chat channel
 
-**Licensed under [CC Attribution-NonCommercial-ShareAlike 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0/)**
-
-<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" alt="CC Attribution-NonCommercial-ShareAlike" style="float:right;"></a>
+**Licensed under MIT License**
 Copyright (c) 2015 NexusInstruments
