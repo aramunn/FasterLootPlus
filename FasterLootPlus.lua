@@ -434,7 +434,7 @@ function FasterLootPlus:OnRestore(eType, tSavedData)
     self.settings.user.version = FASTERLOOTPLUS_CURRENT_VERSION
 
   else
-    self.tConfig = deepcopy(tDefaultOptions)
+    self.settings = deepcopy(tDefaultSettings)
   end
 
   -- if #self.tOldMasterLootList > 0 and addonCRBML ~= nil then
