@@ -319,6 +319,12 @@ function FasterLootPlus:LoadDefaultLootRules(set)
   if set == nil then
     set = self.settings.user.currentRuleSet
   end
+  if not self.settings.ruleSets then
+    self.settings.ruleSets = {}
+  end
+  if not self.settings.ruleSets[set] then
+    self.settings.ruleSets[set] = {}
+  end
   self.settings.ruleSets[set].lootRules = deepcopy(tDefaultLootRules)
   self:RebuildLootRuleItems()
   self:RefreshUI()

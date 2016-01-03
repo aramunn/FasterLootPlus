@@ -448,8 +448,10 @@ function FasterLootPlus:RebuildLootRuleItems()
   local vScrollPos = self.state.windows.ruleList:GetVScrollPos()
   self:SaveLocation()
   self:ClearLootRuleItems()
-  for idx,item in ipairs(self.settings.ruleSets[currentSet].lootRules) do
-    self:AddLootRuleItem(idx, item)
+  if self.settings.ruleSets and self.settings.ruleSets[currentSet] and self.settings.ruleSets[currentSet].lootRules then
+    for idx,item in ipairs(self.settings.ruleSets[currentSet].lootRules) do
+      self:AddLootRuleItem(idx, item)
+    end
   end
   self.state.windows.ruleList:SetVScrollPos(vScrollPos)
   self:RefreshUI()
