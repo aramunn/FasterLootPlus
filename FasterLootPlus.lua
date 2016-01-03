@@ -64,6 +64,8 @@ local tDefaultSettings = {
 local tDefaultState = {
   isOpen = false,
   isRuleSetOpen = false,
+  isMasterLootOpen = false,
+  isFlashShown = false,
   windows = {           -- These store windows for lists
     main = nil,
     ruleList = nil,
@@ -81,7 +83,11 @@ local tDefaultState = {
     options = nil,
     optionsPartyLootRuleItemType = nil,
     optionsThresholdItemType = nil,
-    selectedItem = nil
+    selectedItem = nil,
+    delayedMasterLoot = nil,
+    masterLoot = nil,
+    masterLootItems = nil,
+    masterLootRecipients = nil
   },
   listItems = {         -- These store windows for lists
     itemTypes = {},
@@ -91,8 +97,18 @@ local tDefaultState = {
     rules = {},
     assignees = {},
     thresholds = {},
-    partyLootRules = {}
+    partyLootRules = {},
+    masterLootRecipients = {},
+    masterLootItems = {},
+    masterLoot = {}
   },
+  timers = {
+    flashUpdater = nil
+  },
+  selection = {
+    masterLootItem = nil,
+    masterLootRecipients = nil
+  }
   buttons = {
     editRuleIncILvlHeld = false,
     editRuleDecILvlHeld = false
@@ -151,13 +167,8 @@ function FasterLootPlus:OnLoad()
   self.xmlDoc = XmlDoc.CreateFromFile("FasterLootPlus.xml")
   self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-
-
   Apollo.RegisterEventHandler("Generic_ToggleFasterLootPlus", "OnToggleFasterLootPlus", self)
   Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
-  -- Handles when the Group is Updated
-  Apollo.RegisterEventHandler("Group_Updated", "OnGroupUpdated", self)
-  Apollo.RegisterEventHandler("SubZoneChanged", "OnZoneChanging", self)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -168,10 +179,14 @@ function FasterLootPlus:OnDocLoaded()
     return
   end
 
-  -- Delayed timer to fix Carbine's MasterLoot on /reloadui
-  --Apollo.RegisterTimerHandler("FixCRBML_Delay", "FixCRBML", self)
-
   Apollo.RegisterEventHandler("MasterLootUpdate", "OnMasterLootUpdate", self)
+	Apollo.RegisterEventHandler("LootAssigned", "OnLootAssigned", self)
+	Apollo.RegisterEventHandler("GenericEvent_ToggleGroupBag", 	"OnToggleGroupBag", self)
+  Apollo.RegisterEventHandler("Group_Left",	"OnGroupLeft", self)
+
+  -- Handles when the Group is Updated
+  Apollo.RegisterEventHandler("Group_Updated", "OnGroupUpdated", self)
+  Apollo.RegisterEventHandler("SubZoneChanged", "OnZoneChanging", self)
 
   self.state.windows.main = Apollo.LoadForm(self.xmlDoc, "FasterLootPlusWindow", nil, self)
   self.state.windows.ruleList = self.state.windows.main:FindChild("ItemList")
@@ -244,14 +259,12 @@ function FasterLootPlus:GatherMasterLoot()
   local tLootList = GameLib.GetMasterLoot()
 
   -- Gather all the master lootable items
-  local tMasterLootList = {}
+  self.state.listItems.masterLoot = {}
   for idxNewItem, tCurMasterLoot in pairs(tLootList) do
     if tCurMasterLoot.bIsMaster then
-      table.insert(tMasterLootList, tCurMasterLoot)
+      table.insert(self.state.listItems.masterLoot, tCurMasterLoot)
     end
   end
-
-  return tMasterLootList
 end
 
 -----------------------------------------------------------------------------------------------
@@ -281,14 +294,16 @@ end
 -- When Master Loot is updated, check each one for filtering, and random those
 -- drops that fit the filter.
 function FasterLootPlus:OnMasterLootUpdate(bForceOpen)
-  local tMasterLootList = self:GatherMasterLoot()
+  self:GatherMasterLoot()
 
   if self.settings.user.isEnabled == true then
     -- Check each item against each rule filter
-    for idxMasterItem, tCurMasterLoot in pairs(tMasterLootList) do
+    for idxMasterItem, tCurMasterLoot in pairs(self.state.listItems.masterLoot) do
       self:ProcessItem(tCurMasterLoot)
     end
   end
+
+  self:RefreshMLWindow()
 
   -- Update the old master loot list
   self.tOldMasterLootList = tMasterLootList

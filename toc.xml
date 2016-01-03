@@ -15,4 +15,6 @@
   <Script Name="FasterLootPlus-UI-Rule.lua"/>
   <Script Name="FasterLootPlus-UI-RuleSet.lua"/>
   <Script Name="FasterLootPlus-UI-Assignee.lua"/>
+  <Script Name="FasterLootPlus-ML.lua"/>
+  <Script Name="FasterLootPlus-ML-UI.lua"/>
 </Addon>
