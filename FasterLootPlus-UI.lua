@@ -32,7 +32,7 @@ function FasterLootPlus:OnToggleFasterLootPlus()
 end
 
 function FasterLootPlus:SaveLocation()
-  self.settings.user.savedWndLoc = self.state.windows.main:GetLocation():ToTable()
+  self.settings.locations.main = self.state.windows.main:GetLocation():ToTable()
 end
 
 
@@ -152,8 +152,8 @@ end
 
 function FasterLootPlus:RefreshUI()
   -- Location Restore
-  if self.settings.user.savedWndLoc then
-    locSavedLoc = WindowLocation.new(self.settings.user.savedWndLoc)
+  if self.settings.locations.main then
+    locSavedLoc = WindowLocation.new(self.settings.locations.main)
     self.state.windows.main:MoveToLocation(locSavedLoc)
   end
 

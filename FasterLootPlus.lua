@@ -39,6 +39,12 @@ local tDefaultSettings = {
     isEnabled = true,
     currentRuleSet = 0
   },
+  locations = {
+    main = nil,
+    delayedMasterLoot = nil,
+    masterLooter = nil,
+    masterLoot = nil
+  },
   options = {
     autoSetMasterLootWhenLeading = false,
     autoEnableInRaid = false,
