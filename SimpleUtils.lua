@@ -102,12 +102,13 @@ function vardump (tbl, indent)
   if not indent then indent = 0 end
   for k, v in pairs(tbl) do
     formatting = string.rep("  ", indent) .. k .. ": "
-    if type(v) == 'table' then
+    local type = type(v)
+    if type == 'table' then
       debugprint(formatting)
       vardump(v, indent+1)
-    elseif type(v) == 'boolean' then
+    elseif type == 'boolean' then
       debugprint(formatting .. tostring(v))
-    else
+    elseif type ~= 'userdata' then
       debugprint(formatting .. v)
     end
   end
