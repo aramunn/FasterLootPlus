@@ -108,7 +108,7 @@ local tDefaultState = {
   selection = {
     masterLootItem = nil,
     masterLootRecipients = nil
-  }
+  },
   buttons = {
     editRuleIncILvlHeld = false,
     editRuleDecILvlHeld = false
@@ -275,9 +275,10 @@ function FasterLootPlus:AssignLoot(id, looter, item, mode)
   local itemLink = item:GetChatLinkString()
   local itemName = item:GetName()
   local looterName = looter:GetName()
-
-  self:PrintDB(strAlert.gsub("{item}", itemLink).gsub("{user}", looterName).gsub("{mode}", mode))
-  self:PrintParty(strAlert.gsub("{item}", itemName).gsub("{user}", looterName).gsub("{mode}", mode))
+  local strDB = string.gsub(string.gsub(string.gsub(strAlert,"{item}", itemName), "{user}", looterName), "{mode}", mode)
+  local strParty = string.gsub(string.gsub(string.gsub(strAlert,"{item}", itemLink), "{user}", looterName), "{mode}", mode)
+  self:PrintDB(strDB)
+  self:PrintParty(strParty)
   GameLib.AssignMasterLoot(id, looter)
 end
 

@@ -18,7 +18,7 @@ local Info = Apollo.GetAddonInfo("FasterLootPlus")
 ------------------------------------------------------------------------------------------------
 --- Constants Handlers
 ------------------------------------------------------------------------------------------------
-local FasterLoot.tClassToIcon =
+FasterLootPlus.tClassToIcon =
 {
 	[-2] = "CRB_GroupFrame:sprGroup_Disconnected", -- Disconnected / OOR
 	[-1] = "ClientSprites:GroupRandomLootIcon", -- Random loot
@@ -30,7 +30,7 @@ local FasterLoot.tClassToIcon =
 	[GameLib.CodeEnumClass.Spellslinger]  	= "Icon_Windows_UI_CRB_Spellslinger",
 }
 
-FasterLoot.tItemQuality =
+FasterLootPlus.tItemQuality =
 {
   [Item.CodeEnumItemQuality.Inferior] =
     {
@@ -138,30 +138,69 @@ function FasterLootPlus:OnGenerateTooltip( wndHandler, wndControl, eToolTipType,
 		return
 	end
 
-	local tItem = wndControl:GetData()
+	local tItem = wndControl:GetParent():GetParent():GetData().itemDrop
 	if Tooltip ~= nil and Tooltip.GetItemTooltipForm ~= nil then
-		Tooltip.GetItemTooltipForm(self, wndControl, tItem.itemDrop, {bPrimary = true, bSelling = false, itemCompare = tItem.itemDrop:GetEquippedItemForItemType()})
+		local equip = tItem:GetEquippedItemForItemType()
+		Tooltip.GetItemTooltipForm(self, wndControl, tItem.itemDrop, {bPrimary = true, bSelling = false, itemCompare = equip})
 	end
 end
 
 function FasterLootPlus:OnMLItemSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
+	local item = wndHandler:GetData()
+	if Apollo.IsShiftKeyDown() and eMouseButton == 1 then
+		Event_FireGenericEvent("ItemLink", item.itemDrop)
+	end
 	-- Alter Background of this and change background of previous selection
+	if self.state.selection.masterLootItem then
+		self.state.selection.masterLootItem:SetSprite("BK3:btnHolo_ListView_SimpleNormal")
+	end
+	wndHandler:SetSprite("BK3:btnHolo_ListView_SimplePressed")
 	-- Set selection value
+	self.state.selection.masterLootItem = wndHandler
 	-- Populate Looter List
+	self:PopulateMLLooterLists(item)
 end
 
 function FasterLootPlus:OnMLLooterSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
 	-- Alter Background of this and change background of previous selection
+	if self.state.selection.masterLootRecipients then
+		self.state.selection.masterLootRecipients:SetSprite("BK3:btnHolo_ListView_SimpleNormal")
+	end
+	wndHandler:SetSprite("BK3:btnHolo_ListView_SimplePressed")
 	-- Set selection value
-	-- Populate Looter List
+	self.state.selection.masterLootRecipients = wndHandler
 end
 
 function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 	-- Check both selections
-	-- Check that user isn't OOR and not valid
+	if not self.state.selection.masterLootRecipients or not self.state.selection.masterLootItem then
+		return
+	end
+	local loot = self.state.selection.masterLootItem:GetData()
+	local item = loot.itemDrop
+	local unitLooter = self.state.selection.masterLootRecipients:GetData()
 	-- Perform actual assignment based on selections
-	-- if random assign randomly
-	-- if not random assign to person
+	if unitLooter ~= -1 then
+		local name = unitLooter:GetName()
+		if self.state.listItems.validLooters[name] then
+			self:AssignLoot(loot.nLootId, unitLooter, item, "Assigned")
+			self.state.selection.masterLootItem = nil
+			self.state.selection.masterLootRecipients = nil
+		end
+		return
+	else
+		-- if random assign randomly
+		local validLooter = false
+		local looter
+		while validLooter == false do
+			looter = self:GetRandomLooter(loot.tLooters)
+			validLooter = self.state.listItems.validLooters[looter:GetName()]
+		end
+		self:AssignLoot(loot.nLootId, looter, item, "Random")
+		self.state.selection.masterLootItem = nil
+		self.state.selection.masterLootRecipients = nil
+		return
+	end
 end
 
 function FasterLootPlus:OnButtonFlash()
@@ -253,12 +292,17 @@ function FasterLootPlus:CloseDelayedMLWindow()
 end
 
 function FasterLootPlus:RefreshMLWindow()
-	if not self.state.windows.masterLoot then
-		-- if ML window is not shown, then show the delay button and flash it
-		self:OpenDelayedMLWindow()
+	if #self.state.listItems.masterLoot > 0 then
+		if not self.state.windows.masterLoot then
+			-- if ML window is not shown, then show the delay button and flash it
+			self:OpenDelayedMLWindow()
+		else
+			-- if the ML window is shown then update the contents of the ML window
+			self:OpenMLWindow()
+		end
 	else
-		-- if the ML window is shown then update the contents of the ML window
-		self:OpenMLWindow()
+		self:CloseDelayedMLWindow()
+		self:CloseMLWindow()
 	end
 end
 
@@ -281,7 +325,7 @@ function FasterLootPlus:AddMLItem(tItem)
 		local name = item:GetName()
 		local type = item:GetItemTypeName()
 		local icon = item:GetIcon()
-		vardump(tItem)
+		--vardump(tItem)
 		wnd:FindChild("ItemText"):SetTextColor(self.tItemQuality[iQuality].Color)
 		wnd:FindChild("ItemText"):SetText(name)
 		wnd:FindChild("ItemType"):SetText(type)
@@ -289,7 +333,7 @@ function FasterLootPlus:AddMLItem(tItem)
 		wnd:FindChild("ItemBorder"):SetText("")
 		wnd:FindChild("ItemBorder"):FindChild("ItemIcon"):SetSprite(icon)
 
-		wnd:SetData(item)
+		wnd:SetData(tItem)
 	end
 end
 
@@ -343,7 +387,7 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 	-- Check Range
 	if item.tLootersOutOfRange and next(item.tLootersOutOfRange) then
 		for idx, strLooterOOR in pairs(item.tLootersOutOfRange) do
-			self.state.listItems.validLooters[strLooterOOR] = true
+			self.state.listItems.validLooters[strLooterOOR] = false
 			local wnd = self.state.listItems.masterLootRecipients[strLooterOOR]
 			local name = String_GetWeaselString(Apollo.GetString("Group_OutOfRange"), strLooterOOR)
 			if not wnd then

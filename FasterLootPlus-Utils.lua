@@ -15,6 +15,7 @@ require "Window"
 local FasterLootPlus = Apollo.GetAddon("FasterLootPlus")
 local Info = Apollo.GetAddonInfo("FasterLootPlus")
 
+local Utils = Apollo.GetPackage("SimpleUtils").tPackage
 local ItemHelper = Apollo.GetPackage("ItemHelper").tPackage
 
 -----------------------------------------------------------------------------------------------
@@ -31,12 +32,14 @@ function FasterLootPlus:ToggleDebug()
 end
 
 function FasterLootPlus:PrintParty(str)
-  pprint("[FasterLootPlus]: " .. str)
+  if str then
+    Utils:pprint("[FasterLootPlus]: " .. str)
+  end
 end
 
 function FasterLootPlus:PrintDB(str)
-  if self.settings.user.debug then
-    debug("[FasterLootPlus]: " .. str)
+  if str and self.settings.user.debug then
+    Utils:debug("[FasterLootPlus]: " .. str)
   end
 end
 
