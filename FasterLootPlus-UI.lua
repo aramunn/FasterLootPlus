@@ -71,11 +71,11 @@ function FasterLootPlus:OnFasterLootPlusClosed( wndHandler, wndControl )
 end
 
 function FasterLootPlus:OnEnableChecked( wndHandler, wndControl, eMouseButton )
-  self.settings.user.enabled = true
+  self.settings.user.isEnabled = true
 end
 
 function FasterLootPlus:OnEnableUnchecked( wndHandler, wndControl, eMouseButton )
-  self.settings.user.enabled = false
+  self.settings.user.isEnabled = false
 end
 
 function FasterLootPlus:OnClearLootRules( wndHandler, wndControl, eMouseButton )
@@ -158,7 +158,7 @@ function FasterLootPlus:RefreshUI()
   end
 
   -- Set Enabled Flag
-  self.state.windows.main:FindChild("EnabledButton"):SetCheck(self.settings.user.enabled)
+  self.state.windows.main:FindChild("EnabledButton"):SetCheck(self.settings.user.isEnabled)
 
   -- Sort List Items
   self.state.windows.ruleList:ArrangeChildrenVert()
