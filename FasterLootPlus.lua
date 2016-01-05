@@ -37,7 +37,8 @@ local tDefaultSettings = {
   user = {
     savedWndLoc = {},
     isEnabled = true,
-    currentRuleSet = 0
+    currentRuleSet = 0,
+    rollTime = 12
   },
   locations = {
     main = nil,
@@ -66,6 +67,7 @@ local tDefaultState = {
   isRuleSetOpen = false,
   isMasterLootOpen = false,
   isFlashShown = false,
+  isRollOffActive = false,
   windows = {           -- These store windows for lists
     main = nil,
     ruleList = nil,
@@ -100,14 +102,17 @@ local tDefaultState = {
     partyLootRules = {},
     masterLootRecipients = {},
     masterLootItems = {},
-    masterLoot = {}
+    masterLoot = {},
+    rolls = {}
   },
   timers = {
-    flashUpdater = nil
+    flashUpdater = nil,
+    rollOff = nil
   },
   selection = {
     masterLootItem = nil,
-    masterLootRecipients = nil
+    masterLootRecipients = nil,
+    rollOffItem = nil
   },
   buttons = {
     editRuleIncILvlHeld = false,
@@ -183,6 +188,8 @@ function FasterLootPlus:OnDocLoaded()
 	Apollo.RegisterEventHandler("LootAssigned", "OnLootAssigned", self)
 	Apollo.RegisterEventHandler("GenericEvent_ToggleGroupBag", 	"OnToggleGroupBag", self)
   Apollo.RegisterEventHandler("Group_Left",	"OnGroupLeft", self)
+  Apollo.RegisterEventHandler("ChatMessage",	"OnChatMessage", self)
+  Apollo.RegisterEventHandler("PlayerRoll", "OnPlayerRoll", self)
 
   -- Handles when the Group is Updated
   Apollo.RegisterEventHandler("Group_Updated", "OnGroupUpdated", self)

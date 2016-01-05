@@ -14,14 +14,16 @@ require "Window"
 
 local FasterLootPlus = Apollo.GetAddon("FasterLootPlus")
 local Info = Apollo.GetAddonInfo("FasterLootPlus")
+local Utils = Apollo.GetPackage("SimpleUtils").tPackage
 
 ------------------------------------------------------------------------------------------------
 --- Constants Handlers
 ------------------------------------------------------------------------------------------------
 FasterLootPlus.tClassToIcon =
 {
-	[-2] = "CRB_GroupFrame:sprGroup_Disconnected", -- Disconnected / OOR
+	[-2] = "CSI:sprCSI_IconTimer", -- Roll Off Timer
 	[-1] = "ClientSprites:GroupRandomLootIcon", -- Random loot
+	[0] = "CRB_GroupFrame:sprGroup_Disconnected", -- Disconnected / OOR
 	[GameLib.CodeEnumClass.Medic]       	= "Icon_Windows_UI_CRB_Medic",
 	[GameLib.CodeEnumClass.Esper]       	= "Icon_Windows_UI_CRB_Esper",
 	[GameLib.CodeEnumClass.Warrior]     	= "Icon_Windows_UI_CRB_Warrior",
@@ -180,15 +182,25 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 	local item = loot.itemDrop
 	local unitLooter = self.state.selection.masterLootRecipients:GetData()
 	-- Perform actual assignment based on selections
-	if unitLooter ~= -1 then
-		local name = unitLooter:GetName()
-		if self.state.listItems.validLooters[name] then
-			self:AssignLoot(loot.nLootId, unitLooter, item, "Assigned")
-			self.state.selection.masterLootItem = nil
-			self.state.selection.masterLootRecipients = nil
+	if unitLooter == -2 then
+		if self.state.isRollOffActive then
+			Utils:cprint("[FasterLootPlus] Error: You can not start another roll-off while one is still active.")
+			return
 		end
-		return
-	else
+		if not self.settings.user.rollTime then self.settings.user.rollTime = 12 end
+		-- Start Roll-off Time
+		self.state.listItems.rolls = {}
+		self.state.isRollOffActive = true
+		self.state.timers.rollOff = ApolloTimer.Create(self.settings.user.rollTime, false, "OnRollOffEnd", self)
+		-- Save Roll-off Item
+		self.state.rollOffItem = loot
+		-- Announce Roll
+		local itemLink = item:GetChatLinkString()
+		Utils:pprint("==============================")
+		Utils:pprint("[FasterLootPlus]: /rolling for Item " .. itemLink)
+		Utils:pprint("[FasterLootPlus]: Closing rolls in " .. self.settings.user.rollTime .. "s")
+		Utils:pprint("==============================")
+	elseif unitLooter == -1 then
 		-- if random assign randomly
 		local validLooter = false
 		local looter
@@ -200,7 +212,46 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 		self.state.selection.masterLootItem = nil
 		self.state.selection.masterLootRecipients = nil
 		return
+	else
+		local name = unitLooter:GetName()
+		if self.state.listItems.validLooters[name] then
+			self:AssignLoot(loot.nLootId, unitLooter, item, "Assigned")
+			self.state.selection.masterLootItem = nil
+			self.state.selection.masterLootRecipients = nil
+		end
+		return
 	end
+end
+
+function FasterLootPlus:OnRollOffEnd()
+	self.state.isRollOffActive = false
+	self.state.timers.rollOff:Stop()
+	self.state.timers.rollOff = nil
+	local loot = self.state.rollOffItem
+	local item = loot.itemDrop
+	local itemLink = item:GetChatLinkString()
+	Utils:pprint("[FasterLootPlus]: Rolls are now closed for " .. itemLink)
+	-- Check all rolls
+	for k,v in pairs(self.state.listItems.rolls) do
+		Utils:pprint("[FasterLootPlus]: " .. k .. " - " .. v)
+	end
+	local winner = ""
+	local winningRoll = 0
+	for k,v in pairs(self.state.listItems.rolls) do
+		if v > winningRoll then
+			winner = k
+			winningRoll = v
+		end
+	end
+	if winningRoll ~= 0 then
+		Utils:pprint("[FasterLootPlus]: " .. winner .. " wins with a roll of " .. winningRoll)
+		-- look up user and assign loot
+		local looter = self.state.listItems.masterLootRecipients[winner]:GetData()
+		self:AssignLoot(loot.nLootId, looter, item, "Roll-off")
+	else
+		Utils:pprint("[FasterLootPlus]: No rolls recorded.")
+	end
+	Utils:pprint("==============================")
 end
 
 function FasterLootPlus:OnButtonFlash()
@@ -208,6 +259,47 @@ function FasterLootPlus:OnButtonFlash()
 	local nOpacity = 0
 	if self.state.isFlashShown then nOpacity = 1 end
 	self.state.windows.delayedMasterLoot:FindChild("Flash"):SetOpacity(nOpacity, 2)
+end
+
+function FasterLootPlus:OnChatMessage(tChannel, tEventArgs)
+	-- Check that it's a system message
+	if (tChannel:GetType() == ChatSystemLib.ChatChannel_System) then
+		-- Parse message to see if it's a roll
+		local messages = tEventArgs.arMessageSegments
+		local message = messages[1].strText
+		if string.find(message,"rolls") ~= nil then
+			-- Do something interesting
+			local parts = message:split("[ ]+")
+			local roller = parts[1] .. " " .. parts[2]
+			local roll = tonumber(parts[4])
+			local prerange = parts[5]
+			local ranges = string.gsub(string.gsub(string.gsub(prerange, "%(", ""), "%)", ""), "-", " "):split("[ ]+")
+			local low = tonumber(ranges[1])
+			local high = tonumber(ranges[2])
+			local t = {
+				player = roller,
+				roll = roll,
+				range = {
+					low = low,
+					high = high
+				}
+			}
+			Event_FireGenericEvent("PlayerRoll", t)
+		end
+	end
+end
+
+function FasterLootPlus:OnPlayerRoll(tEventArgs)
+	-- Only record rolls if roll is active
+	if self.state.isRollOffActive then
+		-- Only record roll if it's 1 to 100
+		if tEventArgs.range.low == 1 and tEventArgs.range.high == 100 then
+			-- Only record first roll for the player
+			if not self.state.listItems.rolls[tEventArgs.player] then
+				self.state.listItems.rolls[tEventArgs.player] = tEventArgs.roll
+			end
+		end
+	end
 end
 ------------------------------------------------------------------------------------------------
 --- Master Loot Logic
@@ -376,6 +468,9 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 	wnd = self:AddMLLooter(" - Random - ", -1, nil)
 	wnd:SetData(-1)
 
+	wnd = self:AddMLLooter(" - Initiate Roll-off - ", -2, nil)
+	wnd:SetData(-2)
+
 	for idx, unitLooter in pairs(item.tLooters) do
 		local name = unitLooter:GetName()
 		local class = unitLooter:GetClassId()
@@ -391,7 +486,7 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 			local wnd = self.state.listItems.masterLootRecipients[strLooterOOR]
 			local name = String_GetWeaselString(Apollo.GetString("Group_OutOfRange"), strLooterOOR)
 			if not wnd then
-				wnd = self:AddMLLooter(name, -2, nil)
+				wnd = self:AddMLLooter(name, 0, nil)
 			end
 			wnd:FindChild("ClassBorder"):FindChild("ClassIcon"):SetSprite("CRB_GroupFrame:sprGroup_Disconnected")
 			wnd:FindChild("LooterName"):SetText(name)
