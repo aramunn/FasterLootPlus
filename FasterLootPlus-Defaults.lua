@@ -38,82 +38,7 @@ local tBaseLootRule = {
 
 local tDefaultLootRules = {
   [1] = {
-    label = "Eldan Runic Modules",
-    itemName = "Eldan Runic Module",
-    itemType = nil,
-    randomAssign = false,
-    patternMatch = false,
-    itemQuality = nil,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = { },
-    enabled = true
-  },
-  [2] = {
-    label = "Eldan Signs",
-    itemName = "Sign of .* - Eldan",
-    itemType = nil,
-    randomAssign = false,
-    patternMatch = true,
-    itemQuality = nil,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = { },
-    enabled = true
-  },
-  [3] = {
-    label = "Biophage Clusters",
-    itemName = "Suspended Bio-Phage Cluster",
-    itemType = nil,
-    randomAssign = false,
-    patternMatch = false,
-    itemQuality = nil,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = { },
-    enabled = true
-  },
-  [4] = {
-    label = "Archivos Recipes",
-    itemName = ".*Archivos.*",
-    itemType = -10,
-    randomAssign = false,
-    patternMatch = true,
-    itemQuality = nil,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = { },
-    enabled = true
-  },
-  [5] = {
-    label = "Primal Patterns",
-    itemName = "Partial Primal Pattern",
-    itemType = nil,
-    randomAssign = false,
-    patternMatch = false,
-    itemQuality = nil,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = { },
-    enabled = true
-  },
-  [6] = {
-    label = "Eldan Gifts",
+    label = "Tarnished Eldan Gift",
     itemName = "Tarnished Eldan Gift",
     itemType = nil,
     randomAssign = false,
@@ -127,11 +52,41 @@ local tDefaultLootRules = {
     assignees = { },
     enabled = true
   },
-  [7] = {
-    label = "Warplot Boss",
+  [2] = {
+    label = "Elemental Signs",
+    itemName = "Sign of (Earth|Air|Water|Fire|Life|Logic|Fusion)",
+    itemType = nil,
+    randomAssign = true,
+    patternMatch = true,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
+  },
+  [3] = {
+    label = "Encrypted Datashard",
+    itemName = "Encrypted Datashard",
+    itemType = nil,
+    randomAssign = true,
+    patternMatch = false,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true
+  },
+  [4] = {
+    label = "Warplot Token",
     itemName = "Warplot Boss.*",
     itemType = nil,
-    randomAssign = false,
+    randomAssign = true,
     patternMatch = true,
     itemQuality = nil,
     itemLevel = {
@@ -142,9 +97,9 @@ local tDefaultLootRules = {
     assignees = { },
     enabled = true
   },
-  [8] = {
-    label = "Hoverboard Mount",
-    itemName = ".*Hoverboard Mount",
+  [5] = {
+    label = "Mount Flairs",
+    itemName = "(Hoverboard|Ground) Mount.*",
     itemType = nil,
     randomAssign = false,
     patternMatch = true,
@@ -155,66 +110,6 @@ local tDefaultLootRules = {
     },
     mode = "",
     assignees = { },
-    enabled = true
-  },
-  [9] = {
-    label = "Ground Mount",
-    itemName = ".*Ground Mount",
-    itemType = nil,
-    randomAssign = false,
-    patternMatch = true,
-    itemQuality = nil,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = { },
-    enabled = true
-  },
-  [10] = {
-    label = "Trash Purples",
-    itemName = "",
-    itemType = nil,
-    randomAssign = true,
-    patternMatch = false,
-    itemQuality = Item.CodeEnumItemQuality.Superb,
-    itemLevel = {
-      compareOp = "lte",
-      level = "55"
-    },
-    mode = "",
-    assignees = {},
-    enabled = true
-  },
-  [11] = {
-    label = "Trash Blues",
-    itemName = "",
-    itemType = nil,
-    randomAssign = true,
-    patternMatch = false,
-    itemQuality = Item.CodeEnumItemQuality.Excellent,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = {},
-    enabled = true
-  },
-  [12] = {
-    label = "Trash Greens",
-    itemName = "",
-    itemType = nil,
-    randomAssign = true,
-    patternMatch = false,
-    itemQuality = Item.CodeEnumItemQuality.Good,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = {},
     enabled = true
   }
 }
