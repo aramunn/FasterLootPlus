@@ -21,7 +21,7 @@ local Utils = Apollo.GetPackage("SimpleUtils").tPackage
 ------------------------------------------------------------------------------------------------
 FasterLootPlus.tClassToIcon =
 {
-	[-2] = "CSI:sprCSI_IconTimer", -- Roll Off Timer
+	[-2] = "FasterLootPlusSprites:FastCoins32", -- Roll Off Timer
 	[-1] = "ClientSprites:GroupRandomLootIcon", -- Random loot
 	[0] = "CRB_GroupFrame:sprGroup_Disconnected", -- Disconnected / OOR
 	[GameLib.CodeEnumClass.Medic]       	= "Icon_Windows_UI_CRB_Medic",
