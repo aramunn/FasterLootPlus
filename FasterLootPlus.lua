@@ -427,7 +427,7 @@ function FasterLootPlus:GetPossibleLooters(availableLooters, assignees)
   for idx,looter in ipairs(availableLooters) do
     for idx,assignee in ipairs(assignees) do
       if looter:GetName() == assignee then
-        table.insert(looters,looter:GetName())
+        table.insert(looters,looter)
       end
     end
   end
