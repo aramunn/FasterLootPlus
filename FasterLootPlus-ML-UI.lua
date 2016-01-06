@@ -234,7 +234,8 @@ function FasterLootPlus:OnRollOffEnd()
 	-- Check all rolls
 	local winners = self:GetRollOffWinners()
 	if winners.result == "win" then
-		Utils:pprint("[FasterLootPlus]: " .. winners.rollers[1] .. " wins with a roll of " .. winners.roll .. "!")
+		local winner = winners.rollers[1]
+		Utils:pprint("[FasterLootPlus]: " .. winner .. " wins with a roll of " .. winners.roll .. "!")
 		-- look up user and assign loot
 		local looter = self.state.listItems.masterLootRecipients[winner]:GetData()
 		self:AssignLoot(loot.nLootId, looter, item, "Roll-off")
@@ -508,8 +509,8 @@ function FasterLootPlus:GetRollOffWinners()
 	-- put all pairs into a table of values
 	for k,v in pairs(self.state.listItems.rolls) do
 		if not tValues[v] then tValues[v] = {} end
-		table.insert(tValues, k)
-		table.insert(tPrintRolls, { roll = v, roller = k})
+		table.insert(tValues[v], k)
+		table.insert(tPrintRolls, { roll = v, roller = k })
 	end
 	-- put all values into a table that can be sorted
 	for k,v in pairs(tValues) do
@@ -524,18 +525,19 @@ function FasterLootPlus:GetRollOffWinners()
 	end
 	local tOutput = {}
 	if #tRolls > 0 then
-		if #results[1].rollers > 1 then
+		if #tRolls[1].rollers > 1 then
 			tOutput = {
 				result = "tie",
-				rollers = results[1].rollers,
-				roll = results[1].roll
+				rollers = shallowcopy(tRolls[1].rollers),
+				roll = tRolls[1].roll
 			}
 		else
 			tOutput = {
 				result = "win",
-				rollers = results[1].rollers,
-				roll = results[1].roll
+				rollers = shallowcopy(tRolls[1].rollers),
+				roll = tRolls[1].roll
 			}
+		end
 	else
 		tOutput.result = "none"
 	end
