@@ -232,23 +232,23 @@ function FasterLootPlus:OnRollOffEnd()
 	local itemLink = item:GetChatLinkString()
 	Utils:pprint("[FasterLootPlus]: Rolls are now closed for " .. itemLink)
 	-- Check all rolls
-	for k,v in pairs(self.state.listItems.rolls) do
-		Utils:pprint("[FasterLootPlus]: " .. k .. " - " .. v)
-	end
-	local winner = ""
-	local winningRoll = 0
-	for k,v in pairs(self.state.listItems.rolls) do
-		if v > winningRoll then
-			winner = k
-			winningRoll = v
-		end
-	end
-	if winningRoll ~= 0 then
-		Utils:pprint("[FasterLootPlus]: " .. winner .. " wins with a roll of " .. winningRoll)
+	local winners = self:GetRollOffWinners()
+	if winners.result == "win" then
+		Utils:pprint("[FasterLootPlus]: " .. winners.rollers[1] .. " wins with a roll of " .. winners.roll .. "!")
 		-- look up user and assign loot
 		local looter = self.state.listItems.masterLootRecipients[winner]:GetData()
 		self:AssignLoot(loot.nLootId, looter, item, "Roll-off")
-	else
+	elseif winners.result == "tie" then
+		 local strRollers = ""
+		 local c = 0
+		for k,v in pairs( winners.rollers ) do
+			if c ~= 0 then strRollers = strRollers .. ", " end
+			strRollers = strRollers .. v
+			c = c + 1
+		end
+		Utils:pprint("[FasterLootPlus]: " .. strRollers .. " tied with a winning roll of " .. winners.roll .. "!")
+		Utils:pprint("[FasterLootPlus]: Please /roll to break the tie")
+	elseif winners.result == "none" then
 		Utils:pprint("[FasterLootPlus]: No rolls recorded.")
 	end
 	Utils:pprint("==============================")
@@ -499,4 +499,45 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 		return a:FindChild("LooterName"):GetText() < b:FindChild("LooterName"):GetText()
 	end)
 	self.state.windows.masterLootRecipients:SetVScrollPos(nVPos)
+end
+
+function FasterLootPlus:GetRollOffWinners()
+	local tRolls = {}
+	local tPrintRolls = {}
+	local tValues = {}
+	-- put all pairs into a table of values
+	for k,v in pairs(self.state.listItems.rolls) do
+		if not tValues[v] then tValues[v] = {} end
+		table.insert(tValues, k)
+		table.insert(tPrintRolls, { roll = v, roller = k})
+	end
+	-- put all values into a table that can be sorted
+	for k,v in pairs(tValues) do
+		local t = { roll = k, rollers = v }
+		table.insert(tRolls, t)
+	end
+	local results = table.sort(tRolls, function(a,b) return a.roll > b.roll end)
+	local printResults = table.sort(tPrintRolls, function(a,b) return a.roll > b.roll end)
+	-- Print all rolls
+	for k,v in pairs(tPrintRolls) do
+		Utils:pprint("[FasterLootPlus]: " .. v.roller .. " - " .. v.roll)
+	end
+	local tOutput = {}
+	if #tRolls > 0 then
+		if #results[1].rollers > 1 then
+			tOutput = {
+				result = "tie",
+				rollers = results[1].rollers,
+				roll = results[1].roll
+			}
+		else
+			tOutput = {
+				result = "win",
+				rollers = results[1].rollers,
+				roll = results[1].roll
+			}
+	else
+		tOutput.result = "none"
+	end
+	return tOutput
 end
