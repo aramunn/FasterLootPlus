@@ -68,6 +68,7 @@ local tDefaultState = {
   isMasterLootOpen = false,
   isFlashShown = false,
   isRollOffActive = false,
+  isProcessingActive = false,
   windows = {           -- These store windows for lists
     main = nil,
     ruleList = nil,
@@ -305,11 +306,14 @@ end
 function FasterLootPlus:OnMasterLootUpdate(bForceOpen)
   self:GatherMasterLoot()
 
-  if self.settings.user.isEnabled == true then
+  if self.state.isProcessingActive == false and self.settings.user.isEnabled == true then
+    -- Set the latch to preserve atomic nature
+    self.state.isProcessingActive = true
     -- Check each item against each rule filter
     for idxMasterItem, tCurMasterLoot in pairs(self.state.listItems.masterLoot) do
       self:ProcessItem(tCurMasterLoot)
     end
+    self.state.isProcessingActive = false
   end
 
   self:RefreshMLWindow()
