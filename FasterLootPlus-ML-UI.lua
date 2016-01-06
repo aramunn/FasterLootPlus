@@ -208,14 +208,14 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 			looter = self:GetRandomLooter(loot.tLooters)
 			validLooter = self.state.listItems.validLooters[looter:GetName()]
 		end
-		self:AssignLoot(loot.nLootId, looter, item, "Random")
+		self:AssignLoot(loot.nLootId, looter, item, "Manual-Random")
 		self.state.selection.masterLootItem = nil
 		self.state.selection.masterLootRecipients = nil
 		return
 	else
 		local name = unitLooter:GetName()
 		if self.state.listItems.validLooters[name] then
-			self:AssignLoot(loot.nLootId, unitLooter, item, "Assigned")
+			self:AssignLoot(loot.nLootId, unitLooter, item, "Manual-Assigned")
 			self.state.selection.masterLootItem = nil
 			self.state.selection.masterLootRecipients = nil
 		end

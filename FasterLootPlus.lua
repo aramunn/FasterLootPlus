@@ -390,16 +390,16 @@ function FasterLootPlus:ProcessItem(loot)
 
         if rule.randomAssign == true and #rule.assignees <= 0 then
           -- No looters and random, random out the item
-          self:AssignLoot(loot.nLootId, self:GetRandomLooter(loot.tLooters), item, "Random")
+          self:AssignLoot(loot.nLootId, self:GetRandomLooter(loot.tLooters), item, "Auto-Random")
         elseif rule.randomAssign == true and #rule.assignees > 0 then
           -- Looters and random, random out to one of the designated looters
           local lootr = self:GetRandomLooter(looters)
           if lootr ~= nil then
-            self:AssignLoot(loot.nLootId, lootr, item, "Random-Assigned")
+            self:AssignLoot(loot.nLootId, lootr, item, "Auto-Group Random")
           end
         elseif rule.randomAssign == false and #looters > 0 then
           -- Not random but looters assigned, assign to first priority looter
-          self:AssignLoot(loot.nLootId, looters[1], item, "Assigned")
+          self:AssignLoot(loot.nLootId, looters[1], item, "Auto-Assigned")
         else
           -- Not random and no assignee available, skip
           self:PrintDB("Item (" .. item:GetName() .. ") found to assign, but no assignee available.")
