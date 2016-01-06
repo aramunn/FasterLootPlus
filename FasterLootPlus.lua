@@ -269,9 +269,9 @@ function FasterLootPlus:GatherMasterLoot()
   -- Gather all the master lootable items
   self.state.listItems.masterLoot = {}
   for idxNewItem, tCurMasterLoot in pairs(tLootList) do
-    if tCurMasterLoot.bIsMaster then
+    --if tCurMasterLoot.bIsMaster then
       table.insert(self.state.listItems.masterLoot, tCurMasterLoot)
-    end
+    --end
   end
 end
 
