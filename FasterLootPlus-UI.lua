@@ -32,7 +32,7 @@ function FasterLootPlus:OnToggleFasterLootPlus()
 end
 
 function FasterLootPlus:SaveLocation()
-  self.settings.user.savedWndLoc = self.state.windows.main:GetLocation():ToTable()
+  self.settings.locations.main = self.state.windows.main:GetLocation():ToTable()
 end
 
 
@@ -71,11 +71,11 @@ function FasterLootPlus:OnFasterLootPlusClosed( wndHandler, wndControl )
 end
 
 function FasterLootPlus:OnEnableChecked( wndHandler, wndControl, eMouseButton )
-  self.settings.user.enabled = true
+  self.settings.user.isEnabled = true
 end
 
 function FasterLootPlus:OnEnableUnchecked( wndHandler, wndControl, eMouseButton )
-  self.settings.user.enabled = false
+  self.settings.user.isEnabled = false
 end
 
 function FasterLootPlus:OnClearLootRules( wndHandler, wndControl, eMouseButton )
@@ -152,13 +152,13 @@ end
 
 function FasterLootPlus:RefreshUI()
   -- Location Restore
-  if self.settings.user.savedWndLoc then
-    locSavedLoc = WindowLocation.new(self.settings.user.savedWndLoc)
+  if self.settings.locations.main then
+    locSavedLoc = WindowLocation.new(self.settings.locations.main)
     self.state.windows.main:MoveToLocation(locSavedLoc)
   end
 
   -- Set Enabled Flag
-  self.state.windows.main:FindChild("EnabledButton"):SetCheck(self.settings.user.enabled)
+  self.state.windows.main:FindChild("EnabledButton"):SetCheck(self.settings.user.isEnabled)
 
   -- Sort List Items
   self.state.windows.ruleList:ArrangeChildrenVert()

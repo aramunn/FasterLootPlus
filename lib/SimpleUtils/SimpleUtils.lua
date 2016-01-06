@@ -1,11 +1,13 @@
-local S_MAJOR, S_MINOR = "SimpleUtils-1.0", 2
-local S_Pkg = Apollo.GetPackage(S_MAJOR)
-if S_Pkg and (S_Pkg.nVersion or 0) >= S_MINOR then
+local PackageName, Major, Minor, Patch = "SimpleUtils", 2, 0, 0
+local PkgMajor, PkgMinor = PackageName, tonumber(string.format("%02d%02d%02d", Major, Minor, Patch))
+local Pkg = Apollo.GetPackage(PkgMajor)
+if Pkg and (Pkg.nVersion or 0) >= PkgMinor then
   return -- no upgrade needed
 end
 
+
 -- Set a reference to the actual package or create an empty table
-local SimpleUtils = S_Pkg and S_Pkg.tPackage or {}
+local SimpleUtils = Pkg and Pkg.tPackage or {}
 
 function SimpleUtils:new(args)
    local new = { }
@@ -100,12 +102,13 @@ function vardump (tbl, indent)
   if not indent then indent = 0 end
   for k, v in pairs(tbl) do
     formatting = string.rep("  ", indent) .. k .. ": "
-    if type(v) == 'table' then
+    local type = type(v)
+    if type == 'table' then
       debugprint(formatting)
       vardump(v, indent+1)
-    elseif type(v) == 'boolean' then
+    elseif type == 'boolean' then
       debugprint(formatting .. tostring(v))
-    else
+    elseif type ~= 'userdata' then
       debugprint(formatting .. v)
     end
   end
@@ -129,4 +132,4 @@ function svardump (tbl, indent)
   return str
 end
 
-Apollo.RegisterPackage(SimpleUtils, S_MAJOR, S_MINOR, {})
+Apollo.RegisterPackage(SimpleUtils, PkgMajor, PkgMinor, {})

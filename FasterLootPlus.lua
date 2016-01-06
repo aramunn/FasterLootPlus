@@ -18,23 +18,33 @@ require "ChatSystemLib"
 -- FasterLootPlus Module Definition
 -----------------------------------------------------------------------------------------------
 local FasterLootPlus = {}
-local Utils = Apollo.GetPackage("SimpleUtils-1.0").tPackage
+local Utils = Apollo.GetPackage("SimpleUtils").tPackage
+local RegExp = Apollo.GetPackage("RegExpUtils").tPackage
+local ZoneHelper = Apollo.GetPackage("ZoneHelper").tPackage
 
 local addonCRBML = Apollo.GetAddon("MasterLoot")
 
 -----------------------------------------------------------------------------------------------
 -- FasterLootPlus constants
 -----------------------------------------------------------------------------------------------
-local Major, Minor, Patch, Suffix = 0, 7, 5, -1
+local Major, Minor, Patch, Suffix = 0, 8, 5, -1
 local FASTERLOOTPLUS_CURRENT_VERSION = string.format("%d.%d.%d", Major, Minor, Patch)
 
 local tDefaultSettings = {
   version = FASTERLOOTPLUS_CURRENT_VERSION,
   debug = false,
+  fieldTestMode = true,
   user = {
     savedWndLoc = {},
     isEnabled = true,
-    currentRuleSet = 0
+    currentRuleSet = 0,
+    rollTime = 12
+  },
+  locations = {
+    main = nil,
+    delayedMasterLoot = nil,
+    masterLooter = nil,
+    masterLoot = nil
   },
   options = {
     autoSetMasterLootWhenLeading = false,
@@ -55,6 +65,10 @@ local tDefaultSettings = {
 local tDefaultState = {
   isOpen = false,
   isRuleSetOpen = false,
+  isMasterLootOpen = false,
+  isFlashShown = false,
+  isRollOffActive = false,
+  isProcessingActive = false,
   windows = {           -- These store windows for lists
     main = nil,
     ruleList = nil,
@@ -72,7 +86,11 @@ local tDefaultState = {
     options = nil,
     optionsPartyLootRuleItemType = nil,
     optionsThresholdItemType = nil,
-    selectedItem = nil
+    selectedItem = nil,
+    delayedMasterLoot = nil,
+    masterLoot = nil,
+    masterLootItems = nil,
+    masterLootRecipients = nil
   },
   listItems = {         -- These store windows for lists
     itemTypes = {},
@@ -82,7 +100,20 @@ local tDefaultState = {
     rules = {},
     assignees = {},
     thresholds = {},
-    partyLootRules = {}
+    partyLootRules = {},
+    masterLootRecipients = {},
+    masterLootItems = {},
+    masterLoot = {},
+    rolls = {}
+  },
+  timers = {
+    flashUpdater = nil,
+    rollOff = nil
+  },
+  selection = {
+    masterLootItem = nil,
+    masterLootRecipients = nil,
+    rollOffItem = nil
   },
   buttons = {
     editRuleIncILvlHeld = false,
@@ -142,13 +173,8 @@ function FasterLootPlus:OnLoad()
   self.xmlDoc = XmlDoc.CreateFromFile("FasterLootPlus.xml")
   self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-
-
   Apollo.RegisterEventHandler("Generic_ToggleFasterLootPlus", "OnToggleFasterLootPlus", self)
   Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
-  -- Handles when the Group is Updated
-  Apollo.RegisterEventHandler("Group_Updated", "OnGroupUpdated", self)
-  Apollo.RegisterEventHandler("SubZoneChanged", "OnZoneChanging", self)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -159,10 +185,16 @@ function FasterLootPlus:OnDocLoaded()
     return
   end
 
-  -- Delayed timer to fix Carbine's MasterLoot on /reloadui
-  --Apollo.RegisterTimerHandler("FixCRBML_Delay", "FixCRBML", self)
-
   Apollo.RegisterEventHandler("MasterLootUpdate", "OnMasterLootUpdate", self)
+	Apollo.RegisterEventHandler("LootAssigned", "OnLootAssigned", self)
+	Apollo.RegisterEventHandler("GenericEvent_ToggleGroupBag", 	"OnToggleGroupBag", self)
+  Apollo.RegisterEventHandler("Group_Left",	"OnGroupLeft", self)
+  Apollo.RegisterEventHandler("ChatMessage",	"OnChatMessage", self)
+  Apollo.RegisterEventHandler("PlayerRoll", "OnPlayerRoll", self)
+
+  -- Handles when the Group is Updated
+  Apollo.RegisterEventHandler("Group_Updated", "OnGroupUpdated", self)
+  Apollo.RegisterEventHandler("SubZoneChanged", "OnZoneChanging", self)
 
   self.state.windows.main = Apollo.LoadForm(self.xmlDoc, "FasterLootPlusWindow", nil, self)
   self.state.windows.ruleList = self.state.windows.main:FindChild("ItemList")
@@ -235,27 +267,27 @@ function FasterLootPlus:GatherMasterLoot()
   local tLootList = GameLib.GetMasterLoot()
 
   -- Gather all the master lootable items
-  local tMasterLootList = {}
+  self.state.listItems.masterLoot = {}
   for idxNewItem, tCurMasterLoot in pairs(tLootList) do
-    if tCurMasterLoot.bIsMaster then
-      table.insert(tMasterLootList, tCurMasterLoot)
-    end
+    --if tCurMasterLoot.bIsMaster then
+      table.insert(self.state.listItems.masterLoot, tCurMasterLoot)
+    --end
   end
-
-  return tMasterLootList
 end
 
 -----------------------------------------------------------------------------------------------
 -- FasterLootPlus AssignLoot
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:AssignLoot(id, looter, item, mode)
+  if not looter then return end
   local strAlert = "Assigning {item} to {user} ({mode})"
   local itemLink = item:GetChatLinkString()
   local itemName = item:GetName()
-  local looterName = looter:GetName()
-
-  self:PrintDB(strAlert.gsub("{item}", itemLink).gsub("{user}", looterName).gsub("{mode}", mode))
-  self:PrintParty(strAlert.gsub("{item}", itemName).gsub("{user}", looterName).gsub("{mode}", mode))
+  local looterName = looter:GetName() or ""
+  local strDB = string.gsub(string.gsub(string.gsub(strAlert,"{item}", itemName), "{user}", looterName), "{mode}", mode)
+  local strParty = string.gsub(string.gsub(string.gsub(strAlert,"{item}", itemLink), "{user}", looterName), "{mode}", mode)
+  self:PrintDB(strDB)
+  self:PrintParty(strParty)
   GameLib.AssignMasterLoot(id, looter)
 end
 
@@ -272,14 +304,19 @@ end
 -- When Master Loot is updated, check each one for filtering, and random those
 -- drops that fit the filter.
 function FasterLootPlus:OnMasterLootUpdate(bForceOpen)
-  local tMasterLootList = self:GatherMasterLoot()
+  self:GatherMasterLoot()
 
-  if self.settings.user.isEnabled == true then
+  if self.state.isProcessingActive == false and self.settings.user.isEnabled == true then
+    -- Set the latch to preserve atomic nature
+    self.state.isProcessingActive = true
     -- Check each item against each rule filter
-    for idxMasterItem, tCurMasterLoot in pairs(tMasterLootList) do
+    for idxMasterItem, tCurMasterLoot in pairs(self.state.listItems.masterLoot) do
       self:ProcessItem(tCurMasterLoot)
     end
+    self.state.isProcessingActive = false
   end
+
+  self:RefreshMLWindow()
 
   -- Update the old master loot list
   self.tOldMasterLootList = tMasterLootList
@@ -290,19 +327,13 @@ end
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemType(item, rule)
   if rule.itemType ~= nil then
+    local itemType = item:GetItemType()
     -- Check if the rule is an aggregate type
     if rule.itemType < 0 then
-      -- Get the Aggregate Rules Table
-      local tAggregate = tItemTypeAggregates[rule.itemType]
-      -- Loop through all the items
-      for key,value in pairs(tAggregate) do
-        -- Check if the item type matches one of the aggregate rules
-        if item.type == value then return true end
-      end
-      return false
+      return ItemHelper:IsItemTypeOfGroup(itemType, rule.itemType)
     else
       -- Check if the item type matches one the rule
-      if item.type == rule.itemType then return true end
+      if itemType == rule.itemType then return true end
       return false
     end
   end
@@ -314,16 +345,17 @@ end
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemName(item, rule)
   if rule.itemName ~= nil and rule.itemName ~= "" then
+    local name = item:GetName()
     -- Use Pattern Matching to find the item if pattern mode is on, else use simple matching
     if rule.patternMatch == true then
       -- RegExp Match
       local regex = RegExp.compile(rule.itemName)
-      local find = regex:search(item.name)
+      local find = regex:search(name)
       if find then return true end
       return false
     else
       -- Standard Lua Pattern Match
-      return string.match(item.name, rule.itemName)
+      return string.match(name, rule.itemName)
     end
   end
   return true
@@ -333,8 +365,9 @@ end
 -- FasterLootPlus CompareItemQuality
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemQuality(item, rule)
+  local quality = item:GetItemQuality()
   if rule.itemQuality ~= nil and rule.itemQuality ~= "" then
-    if item.quality ~= rule.itemQuality then return false end
+    if quality ~= rule.itemQuality then return false end
   end
   return true
 end
@@ -343,7 +376,7 @@ end
 -- FasterLootPlus CompareItemLevel
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemLevel(item, rule)
-  local iLvl = item.nEffectiveLevel
+  local iLvl = item:GetEffectiveLevel()
   return self:CompareOp(rule.itemLevel.compareOp, iLvl, tonumber(rule.itemLevel.level))
 end
 
@@ -353,7 +386,7 @@ end
 function FasterLootPlus:ProcessItem(loot)
   local current = self.settings.user.currentRuleSet
   local item = loot.itemDrop
-  for idx,rule in ipairs(self.settings.ruleSets[current]) do
+  for idx,rule in pairs(self.settings.ruleSets[current].lootRules) do
     -- Only check the rule if it is enabled
     if rule.enabled == true then
       -- Compares Item to all filter criteria
@@ -365,16 +398,16 @@ function FasterLootPlus:ProcessItem(loot)
 
         if rule.randomAssign == true and #rule.assignees <= 0 then
           -- No looters and random, random out the item
-          self:AssignLoot(loot.nLootId, self:GetRandomLooter(loot.tLooters), item, "Random")
+          self:AssignLoot(loot.nLootId, self:GetRandomLooter(loot.tLooters), item, "Auto-Random")
         elseif rule.randomAssign == true and #rule.assignees > 0 then
           -- Looters and random, random out to one of the designated looters
           local lootr = self:GetRandomLooter(looters)
           if lootr ~= nil then
-            self:AssignLoot(loot.nLootId, lootr, item, "Random-Assigned")
+            self:AssignLoot(loot.nLootId, lootr, item, "Auto-Group Random")
           end
         elseif rule.randomAssign == false and #looters > 0 then
           -- Not random but looters assigned, assign to first priority looter
-          self:AssignLoot(loot.nLootId, looters[1], item, "Assigned")
+          self:AssignLoot(loot.nLootId, looters[1], item, "Auto-Assigned")
         else
           -- Not random and no assignee available, skip
           self:PrintDB("Item (" .. item:GetName() .. ") found to assign, but no assignee available.")
@@ -394,7 +427,7 @@ function FasterLootPlus:GetPossibleLooters(availableLooters, assignees)
   for idx,looter in ipairs(availableLooters) do
     for idx,assignee in ipairs(assignees) do
       if looter:GetName() == assignee then
-        table.insert(looters,looter:GetName())
+        table.insert(looters,looter)
       end
     end
   end
@@ -438,7 +471,7 @@ function FasterLootPlus:OnRestore(eType, tSavedData)
     self.settings.user.version = FASTERLOOTPLUS_CURRENT_VERSION
 
   else
-    self.tConfig = deepcopy(tDefaultOptions)
+    self.settings = deepcopy(tDefaultSettings)
   end
 
   -- if #self.tOldMasterLootList > 0 and addonCRBML ~= nil then
@@ -482,21 +515,12 @@ function FasterLootPlus:OnGroupUpdated()
   end
 end
 
-function FasterLootPlus:IsRaidContinent(nContinentId)
-  return nContinentId == 52 or nContinentId == 67
-end
-
-function FasterLootPlus:IsDungeonContinent(nContinentId)
-  return nContinentId == 27 or nContinentId == 28 or nContinentId == 25 or nContinentId == 16 or nContinentId == 17 or nContinentId == 23
-    or nContinentId == 15 or nContinentId == 13 or nContinentId == 14 or nContinentId == 48
-end
-
 function FasterLootPlus:OnZoneChanging()
   local zoneMap = GameLib.GetCurrentZoneMap()
   if zoneMap and zoneMap.continentId then
     self.state.player.currentContinent = zoneMap.continentId
-    self.state.player.isInRaid = self:IsRaidContinent(self.state.player.currentContinent)
-    self.state.player.isInDungeon = self:IsRaidContinent(self.state.player.currentContinent)
+    self.state.player.isInRaid = ZoneHelper:IsContinentRaid(self.state.player.currentContinent)
+    self.state.player.isInDungeon = ZoneHelper:IsContinentDungeon(self.state.player.currentContinent)
   end
   self.state.player.lootSetSinceLeader = false
   self:ProcessOptions()

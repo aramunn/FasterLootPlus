@@ -1,11 +1,12 @@
-local R_MAJOR, R_MINOR = "RegExp-1.0", 1
-local R_Pkg = Apollo.GetPackage(RS_MAJOR)
-if R_Pkg and (R_Pkg.nVersion or 0) >= R_MINOR then
+local PackageName, Major, Minor, Patch = "RegExpUtils", 1, 0, 0
+local PkgMajor, PkgMinor = PackageName, tonumber(string.format("%02d%02d%02d", Major, Minor, Patch))
+local Pkg = Apollo.GetPackage(PkgMajor)
+if Pkg and (Pkg.nVersion or 0) >= PkgMinor then
   return -- no upgrade needed
 end
 
 -- Set a reference to the actual package or create an empty table
-local RegExp = R_Pkg and R_Pkg.tPackage or {}
+local RegExp = Pkg and Pkg.tPackage or {}
 
 RegExp.cacheSize = 100 -- this is the size of regex cache
 local g_sourceCache_re = {}
@@ -1919,4 +1920,4 @@ function RegExp.__compile(regex, flags)
     return obj
 end
 
-Apollo.RegisterPackage(RegExp, R_MAJOR, R_MINOR, {})
+Apollo.RegisterPackage(RegExp, PkgMajor, PkgMinor, {})
