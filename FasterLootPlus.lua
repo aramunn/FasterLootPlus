@@ -278,10 +278,11 @@ end
 -- FasterLootPlus AssignLoot
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:AssignLoot(id, looter, item, mode)
+  if not looter then return end
   local strAlert = "Assigning {item} to {user} ({mode})"
   local itemLink = item:GetChatLinkString()
   local itemName = item:GetName()
-  local looterName = looter:GetName()
+  local looterName = looter:GetName() or ""
   local strDB = string.gsub(string.gsub(string.gsub(strAlert,"{item}", itemName), "{user}", looterName), "{mode}", mode)
   local strParty = string.gsub(string.gsub(string.gsub(strAlert,"{item}", itemLink), "{user}", looterName), "{mode}", mode)
   self:PrintDB(strDB)
