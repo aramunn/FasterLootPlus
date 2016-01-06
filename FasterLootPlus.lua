@@ -386,7 +386,7 @@ end
 function FasterLootPlus:ProcessItem(loot)
   local current = self.settings.user.currentRuleSet
   local item = loot.itemDrop
-  for idx,rule in ipairs(self.settings.ruleSets[current]) do
+  for idx,rule in pairs(self.settings.ruleSets[current].lootRules) do
     -- Only check the rule if it is enabled
     if rule.enabled == true then
       -- Compares Item to all filter criteria
