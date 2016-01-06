@@ -323,12 +323,13 @@ end
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemType(item, rule)
   if rule.itemType ~= nil then
+    local itemType = item:GetItemType()
     -- Check if the rule is an aggregate type
     if rule.itemType < 0 then
-      return ItemHelper:IsItemTypeOfGroup(item.type, rule.itemType)
+      return ItemHelper:IsItemTypeOfGroup(itemType, rule.itemType)
     else
       -- Check if the item type matches one the rule
-      if item.type == rule.itemType then return true end
+      if itemType == rule.itemType then return true end
       return false
     end
   end
@@ -340,16 +341,17 @@ end
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemName(item, rule)
   if rule.itemName ~= nil and rule.itemName ~= "" then
+    local name = item:GetName()
     -- Use Pattern Matching to find the item if pattern mode is on, else use simple matching
     if rule.patternMatch == true then
       -- RegExp Match
       local regex = RegExp.compile(rule.itemName)
-      local find = regex:search(item.name)
+      local find = regex:search(name)
       if find then return true end
       return false
     else
       -- Standard Lua Pattern Match
-      return string.match(item.name, rule.itemName)
+      return string.match(name, rule.itemName)
     end
   end
   return true
@@ -359,8 +361,9 @@ end
 -- FasterLootPlus CompareItemQuality
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemQuality(item, rule)
+  local quality = item:GetItemQuality()
   if rule.itemQuality ~= nil and rule.itemQuality ~= "" then
-    if item.quality ~= rule.itemQuality then return false end
+    if quality ~= rule.itemQuality then return false end
   end
   return true
 end
@@ -369,7 +372,7 @@ end
 -- FasterLootPlus CompareItemLevel
 -----------------------------------------------------------------------------------------------
 function FasterLootPlus:CompareItemLevel(item, rule)
-  local iLvl = item.nEffectiveLevel
+  local iLvl = item:GetEffectiveLevel()
   return self:CompareOp(rule.itemLevel.compareOp, iLvl, tonumber(rule.itemLevel.level))
 end
 
