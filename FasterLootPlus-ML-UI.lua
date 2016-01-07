@@ -146,29 +146,49 @@ function FasterLootPlus:OnGenerateTooltip( wndHandler, wndControl, eToolTipType,
 end
 
 function FasterLootPlus:OnMLItemSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-	local item = wndHandler:GetData()
-	if Apollo.IsShiftKeyDown() and eMouseButton == 1 then
-		Event_FireGenericEvent("ItemLink", item.itemDrop)
+	if wndHandler then
+		local item = wndHandler:GetData()
+		if eMouseButton == 1 then
+			if Apollo.IsShiftKeyDown() then
+				Event_FireGenericEvent("ItemLink", item.itemDrop)
+			else
+				-- Direct Link to Party Chat
+				Event_FireGenericEvent("ItemLink", item.itemDrop)
+			end
+		end
+		-- Alter Background of this and change background of previous selection
+		if self.state.selection.masterLootItem then
+			self.state.selection.masterLootItem:SetSprite("BK3:btnHolo_ListView_SimpleNormal")
+		end
+		wndHandler:SetSprite("BK3:btnHolo_ListView_SimplePressed")
+		-- Set selection value
+		self.state.selection.masterLootItem = wndHandler
+		self.state.selection.masterLootItemId = item.nLootId
+		-- Populate Looter List if this is the looter window
+		if wndHandler:GetParent():GetParent():GetName() == "MasterLooterWindow" then
+			self:PopulateMLLooterLists(item)
+		end
 	end
-	-- Alter Background of this and change background of previous selection
-	if self.state.selection.masterLootItem then
-		self.state.selection.masterLootItem:SetSprite("BK3:btnHolo_ListView_SimpleNormal")
-	end
-	wndHandler:SetSprite("BK3:btnHolo_ListView_SimplePressed")
-	-- Set selection value
-	self.state.selection.masterLootItem = wndHandler
-	-- Populate Looter List
-	self:PopulateMLLooterLists(item)
 end
 
 function FasterLootPlus:OnMLLooterSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-	-- Alter Background of this and change background of previous selection
-	if self.state.selection.masterLootRecipients then
-		self.state.selection.masterLootRecipients:SetSprite("BK3:btnHolo_ListView_SimpleNormal")
+	if wndHandler then
+		local unitLooter = wndHandler:GetData()
+		-- Alter Background of this and change background of previous selection
+		if self.state.selection.masterLootRecipients then
+			self.state.selection.masterLootRecipients:SetSprite("BK3:btnHolo_ListView_SimpleNormal")
+		end
+		wndHandler:SetSprite("BK3:btnHolo_ListView_SimplePressed")
+		-- Set selection value
+		self.state.selection.masterLootRecipients = wndHandler
+		if unitLooter == -1 then
+			self.state.selection.masterLootRecipientsId = " - Random - "
+		elseif unitLooter == -2 then
+			self.state.selection.masterLootRecipientsId = " - Initiate Roll-off - "
+		else
+			self.state.selection.masterLootRecipientsId = unitLooter:GetName()
+		end
 	end
-	wndHandler:SetSprite("BK3:btnHolo_ListView_SimplePressed")
-	-- Set selection value
-	self.state.selection.masterLootRecipients = wndHandler
 end
 
 function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
@@ -345,6 +365,8 @@ function FasterLootPlus:CloseMLWindow()
 	end
 	self.state.isMasterLootOpen = false
 	self.state.windows.masterLoot = nil
+	self.state.selection.masterLootItem = nil
+	self.state.selection.masterLootRecipients = nil
 end
 
 function FasterLootPlus:SetButtonFlash(active)
@@ -455,6 +477,11 @@ function FasterLootPlus:PopulateMLItemLists()
 	end
 	self.state.windows.masterLootItems:ArrangeChildrenVert()
 	self.state.windows.masterLootItems:SetVScrollPos(nVPos)
+	-- Restore Selected Item
+	if self.state.selection.masterLootItemId then
+		local wnd = self.state.listItems.masterLootItems[self.state.selection.masterLootItemId]
+		self:OnMLItemSelected(wnd, wnd, 0)
+	end
 end
 
 function FasterLootPlus:PopulateMLLooterLists(item)
@@ -498,6 +525,11 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 		return a:FindChild("LooterName"):GetText() < b:FindChild("LooterName"):GetText()
 	end)
 	self.state.windows.masterLootRecipients:SetVScrollPos(nVPos)
+	-- Restore Selected Item
+	if self.state.selection.masterLootRecipientsId then
+		local wnd = self.state.listItems.masterLootRecipients[self.state.selection.masterLootRecipientsId]
+		self:OnMLLooterSelected(wnd, wnd, 0)
+	end
 end
 
 function FasterLootPlus:GetRollOffWinners()

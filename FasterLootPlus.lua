@@ -114,6 +114,8 @@ local tDefaultState = {
   selection = {
     masterLootItem = nil,
     masterLootRecipients = nil,
+    masterLootItemId = nil,
+    masterLootRecipients = nil,
     rollOffItem = nil
   },
   buttons = {
