@@ -185,6 +185,8 @@ function FasterLootPlus:OnMLLooterSelected( wndHandler, wndControl, eMouseButton
 			self.state.selection.masterLootRecipientsId = " - Random - "
 		elseif unitLooter == -2 then
 			self.state.selection.masterLootRecipientsId = " - Initiate Roll-off - "
+		elseif unitLooter == 0 then
+			--self.state.selection.masterLootRecipientsId = " - Initiate Roll-off - "
 		else
 			self.state.selection.masterLootRecipientsId = unitLooter:GetName()
 		end
