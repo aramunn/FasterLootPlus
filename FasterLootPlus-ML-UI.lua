@@ -136,14 +136,12 @@ function FasterLootPlus:OnToggleGroupBag()
 end
 
 function FasterLootPlus:OnGenerateTooltip( wndHandler, wndControl, eToolTipType, x, y )
-	if wndHandler ~= wndControl then
-		return
-	end
-
-	local tItem = wndControl:GetParent():GetParent():GetData().itemDrop
-	if Tooltip ~= nil and Tooltip.GetItemTooltipForm ~= nil then
-		local equip = tItem:GetEquippedItemForItemType()
-		Tooltip.GetItemTooltipForm(self, wndControl, tItem.itemDrop, {bPrimary = true, bSelling = false, itemCompare = equip})
+	wndControl:SetTooltipDoc(nil)
+	local data = wndHandler:GetData()
+	if data then
+		local item = data.itemDrop
+		local itemEquipped = item:GetEquippedItemForItemType()
+		Tooltip.GetItemTooltipForm(self, wndControl, item, {bPrimary = true, bSelling = false, itemCompare = itemEquipped})
 	end
 end
 
