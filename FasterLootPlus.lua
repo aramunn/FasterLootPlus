@@ -387,13 +387,19 @@ end
 function FasterLootPlus:ProcessItem(loot)
   local current = self.settings.user.currentRuleSet
   local item = loot.itemDrop
+  Event_FireGenericEvent("FasterLootPlus_ProcessLog", loot)
   for idx,rule in pairs(self.settings.ruleSets[current].lootRules) do
     -- Only check the rule if it is enabled
     if rule.enabled == true then
       -- Compares Item to all filter criteria
-      local check = self:CompareItemType(item,rule) and self:CompareItemName(item,rule) and self:CompareItemQuality(item,rule) and self:CompareItemLevel(item,rule)
+      local typeCheck = self:CompareItemType(item,rule)
+      local nameCheck = self:CompareItemName(item,rule)
+      local qltyCheck = self:CompareItemQuality(item,rule)
+      local levlCheck = self:CompareItemLevel(item,rule)
+      local check = typeCheck and nameCheck and qltyCheck and levlCheck
       -- The item meets the filter criteria, lets do something and return
       if check == true then
+        Event_FireGenericEvent("FasterLootPlus_ItemCheck", {label = rule.label, checks = {typeCheck, nameCheck, qltyCheck, levlCheck, check}})
         -- Do something with the item and exit
         local looters = self:GetPossibleLooters(loot.tLooters, rule.assignees)
 
