@@ -21,6 +21,7 @@ local FasterLootPlus = {}
 local Utils = Apollo.GetPackage("SimpleUtils").tPackage
 local RegExp = Apollo.GetPackage("RegExpUtils").tPackage
 local ZoneHelper = Apollo.GetPackage("ZoneHelper").tPackage
+local ItemHelper = Apollo.GetPackage("ItemHelper").tPackage
 
 local addonCRBML = Apollo.GetAddon("MasterLoot")
 
