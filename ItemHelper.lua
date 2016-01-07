@@ -1,4 +1,4 @@
-local PackageName, Major, Minor, Patch = "ItemHelper", 1, 0, 0
+local PackageName, Major, Minor, Patch = "ItemHelper", 1, 0, 2
 local PkgMajor, PkgMinor = PackageName, tonumber(string.format("%02d%02d%02d", Major, Minor, Patch))
 local Pkg = Apollo.GetPackage(PkgMajor)
 if Pkg and (Pkg.nVersion or 0) >= PkgMinor then
@@ -54,7 +54,7 @@ ItemHelper.ItemTypeGroupLookup = {
   [ItemHelper.ItemTypeGroup.Token] = { 467, 468, 469, 470, 471, 472, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494 },
   [ItemHelper.ItemTypeGroup.Element] = { 339, 340, 341, 342, 343, 344, 345 },
   [ItemHelper.ItemTypeGroup.Housing] = { 155, 164 },
-  [ItemHelper.ItemTypeGroup.Crafting] = { 196, 197, 198, 201, 202, 206, 207, 208, 211, 213, 214, 219, 221, 266, 268, 269, 270, 271, 272, 273, 274, 275, 281, 282, 306, 307, 308, 309, 318, 320, 321, 322, 324, 325, 326, 327, 330, 331, 362, 363, 364, 365, 382, 383, 384, 385, 386, 387, 390, 391, 400, 401, 402, 403, 453 },  -- 302, 458, 459, 460
+  [ItemHelper.ItemTypeGroup.Crafting] = { 196, 197, 198, 201, 202, 206, 207, 208, 211, 213, 214, 219, 221, 266, 268, 269, 270, 271, 272, 273, 274, 275, 281, 282, 306, 307, 308, 309, 318, 320, 321, 322, 324, 325, 326, 327, 330, 331, 362, 363, 364, 365, 382, 383, 384, 385, 386, 387, 390, 391, 400, 401, 402, 403, 453, 519, 520 },  -- 302, 458, 459, 460
   [ItemHelper.ItemTypeGroup.Consumable] = { 74, 75, 90, 139, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 312, 313, 315, 316, 317, 328, 329, 336, 337, 338, 347, 361, 389, 452, 454, 455, 456, 457 }, -- 461
   [ItemHelper.ItemTypeGroup.Weapon] = { 45, 46, 48, 51, 79, 204 },  -- 49
   [ItemHelper.ItemTypeGroup.Armor] = { 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 53, 298, 299, 300, 301 },  -- 217
@@ -383,7 +383,11 @@ ItemHelper.ItemTypes = {
   [494] = "Token - Light Armor - Feet",
   [495] = "(Vanity)",                            -- Appearance Modification Token
   [496] = "Toy",                                 -- Official Anniversary Party-Starter
-  [499] = "(Malfunctioning Item)"                -- When item needs a /ticket
+  [499] = "(Malfunctioning Item)",               -- When item needs a /ticket
+  [516] = "Set Focus",
+  [519] = "Weave",
+  [520] = "Cloth",
+  [525] = "Matrix",
 }
 
 function ItemHelper:IsItemTypeOfGroup(typeID, groupID)
