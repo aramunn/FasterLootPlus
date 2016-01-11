@@ -33,7 +33,8 @@ local tBaseLootRule = {
   randomAssign = false,
   patternMatch = false,
   assignees = {},
-  enabled = false
+  enabled = false,
+  confirmed = false
 }
 
 local tDefaultLootRules = {
@@ -50,7 +51,8 @@ local tDefaultLootRules = {
     },
     mode = "",
     assignees = { },
-    enabled = true
+    enabled = true,
+    confirmed = false
   },
   [2] = {
     label = "Elemental Signs",
@@ -65,7 +67,8 @@ local tDefaultLootRules = {
     },
     mode = "",
     assignees = { },
-    enabled = true
+    enabled = true,
+    confirmed = false
   },
   [3] = {
     label = "Encrypted Datashard",
@@ -80,24 +83,10 @@ local tDefaultLootRules = {
     },
     mode = "",
     assignees = { },
-    enabled = true
+    enabled = true,
+    confirmed = false
   },
   [4] = {
-    label = "Warplot Token",
-    itemName = "Warplot Boss.*",
-    itemType = nil,
-    randomAssign = true,
-    patternMatch = true,
-    itemQuality = nil,
-    itemLevel = {
-      compareOp = nil,
-      level = nil
-    },
-    mode = "",
-    assignees = { },
-    enabled = true
-  },
-  [5] = {
     label = "Mount Flairs",
     itemName = "(Hoverboard|Ground) Mount.*",
     itemType = nil,
@@ -110,8 +99,73 @@ local tDefaultLootRules = {
     },
     mode = "",
     assignees = { },
-    enabled = true
-  }
+    enabled = true,
+    confirmed = false
+  },
+  [5] = {
+    label = "Rune Focuses",
+    itemName = "(Pure|Divine) (Class|Set) Focus - (Minor|Major)",
+    itemType = nil,
+    randomAssign = false,
+    patternMatch = true,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true,
+    confirmed = false
+  },
+  [6] = {
+    label = "Crafting Matrices",
+    itemName = "(Genetic|Datascape) Matrix",
+    itemType = nil,
+    randomAssign = false,
+    patternMatch = true,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true,
+    confirmed = false
+  },
+  [7] = {
+    label = "Crafting Mats",
+    itemName = "",
+    itemType = -5,
+    randomAssign = false,
+    patternMatch = false,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = nil,
+      level = nil
+    },
+    mode = "",
+    assignees = { },
+    enabled = true,
+    confirmed = false
+  },
+  [8] = {
+    label = "Low Level Runes",
+    itemName = "Rune:",
+    itemType = nil,
+    randomAssign = true,
+    patternMatch = false,
+    itemQuality = nil,
+    itemLevel = {
+      compareOp = "lte",
+      level = "50"
+    },
+    mode = "",
+    assignees = { },
+    enabled = true,
+    confirmed = false
+  },
 }
 
 FasterLootPlus.tComparisonOps = {
