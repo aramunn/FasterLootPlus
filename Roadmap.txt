@@ -1,17 +1,20 @@
-* Loot Rule Save validation
-** "Stupid Rule" Warning on Validation
-* "Duplicate Rule Set" Button
-* Button Hold logic for Increment/Decrement Item Level
-* Abstraction of the "Drop Down List" functionality
-* Sort Item Type List
-* Fix stange dropdown issues with objects below the dropdown on rule edit
+* Auto-loot queue and process on a timer. This means that items can be queued and checked that they have already been processed.
+* Auto-loot rule confirmation to ensure that loot rules don't do crazy things when they rune untested
+* Simulation mode
 
-* Randomize Remaining button
-* Replace Masterloot window
-** Must wait util out of combat to pop (include option for this)
-
-== Validation Rules ==
-** Must have at least one assignee
-** Can't radomize with one assignee
-** Can't take all items of specific item types & quality pairs above of a specific quality
+* Loot Rule Validation On Save
 ** Duplicate assignee name
+** "Stupid Rule"
+*** Can't take all items of specific item types & quality pairs above of a specific quality
+*** RegExp is too greedy
+
+* [UI] Button Hold logic for Increment/Decrement Item Level
+* [UI] "Duplicate Rule Set" Button
+* [UI] Sort Item Type Drop Down
+
+* Roll window replacement
+* Add rolled loot rulesets for handling of items which match filters.
+
+* Add Item Context Menu to add additional option of "Add Filter"
+
+* [WISH LIST] Abstraction of the "Drop Down List" functionality

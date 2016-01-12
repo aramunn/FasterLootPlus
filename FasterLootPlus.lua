@@ -105,7 +105,8 @@ local tDefaultState = {
     masterLootRecipients = {},
     masterLootItems = {},
     masterLoot = {},
-    rolls = {}
+    rolls = {},
+    itemQueue = {}
   },
   timers = {
     flashUpdater = nil,
@@ -392,6 +393,8 @@ function FasterLootPlus:ProcessItem(loot)
   local item = loot.itemDrop
   Event_FireGenericEvent("FasterLootPlus_ProcessLog", loot)
   for idx,rule in pairs(self.settings.ruleSets[current].lootRules) do
+    -- Add confirmed to all loot rules
+    if rule.confirmed == nil then rule.confirmed = false end
     -- Only check the rule if it is enabled
     if rule.enabled == true then
       -- Compares Item to all filter criteria
