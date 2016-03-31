@@ -35,7 +35,7 @@ FasterLootPlus.tClassToIcon =
 FasterLootPlus.tItemQuality =
 {
   [Item.CodeEnumItemQuality.Inferior] =
-    {
+  {
     Name			= "Inferior",
     Color			= "ItemQuality_Inferior",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Silver",
@@ -53,7 +53,7 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityWhite",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetWhite",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_White",
-   },
+	},
   [Item.CodeEnumItemQuality.Good]	=
   {
     Name			= "Good",
@@ -63,7 +63,7 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityGreen",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetGreen",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Green",
-    },
+  },
   [Item.CodeEnumItemQuality.Excellent] =
   {
     Name			= "Excellent",
@@ -75,7 +75,7 @@ FasterLootPlus.tItemQuality =
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Blue",
   },
   [Item.CodeEnumItemQuality.Superb] =
-    {
+  {
     Name			= "Superb",
     Color		   	= "ItemQuality_Superb",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Purple",
@@ -83,9 +83,9 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityPurple",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetPurple",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Purple",
-   },
+	},
   [Item.CodeEnumItemQuality.Legendary] =
-    {
+  {
     Name			= "Legendary",
     Color		   	= "ItemQuality_Legendary",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Orange",
@@ -93,9 +93,9 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityOrange",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetOrange",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Orange",
-    },
+  },
   [Item.CodeEnumItemQuality.Artifact] =
-    {
+  {
     Name			= "Artifact",
     Color		   	= "ItemQuality_Artifact",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Pink",
@@ -103,7 +103,7 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityMagenta",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetPink",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Pink",
-  },
+  }
 }
 
 
@@ -116,6 +116,14 @@ end
 
 function FasterLootPlus:DelayMasterLootWindowMoved( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
 	self.settings.locations.delayedMasterLoot = self.state.windows.delayedMasterLoot:GetLocation():ToTable()
+end
+
+function FasterLootPlus:OnMasterLooterWindowMoved( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
+	self.settings.locations.masterLooter = self.state.windows.masterLoot:GetLocation():ToTable()
+end
+
+function FasterLootPlus:OnMasterLootWindowMoved( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
+	self.settings.locations.masterLoot = self.state.windows.masterLoot:GetLocation():ToTable()
 end
 
 function FasterLootPlus:OnDelayedMasterLootOpen( wndHandler, wndControl, eMouseButton )
@@ -326,8 +334,12 @@ end
 --- Master Loot Logic
 ------------------------------------------------------------------------------------------------
 function FasterLootPlus:OpenMLWindow()
+	local nVPos = nil
 	-- Make sure no ML window is open
 	if self.state.windows.masterLoot then
+		if self.state.windows.masterLootRecipients ~= nil then
+			nVPos = self.state.windows.masterLootRecipients:GetVScrollPos()
+		end
 		self:CloseMLWindow()
 	end
 
@@ -340,6 +352,9 @@ function FasterLootPlus:OpenMLWindow()
 		end
 		self.state.windows.masterLootItems = self.state.windows.masterLoot:FindChild("ItemList")
 		self.state.windows.masterLootRecipients = self.state.windows.masterLoot:FindChild("LooterList")
+		if nVPos ~= nil then
+			self.state.windows.masterLootRecipients:SetVScrollPos(nVPos)
+		end
 	else
 		self.state.windows.masterLoot = Apollo.LoadForm(self.xmlDoc, "MasterLootWindow", nil, self)
 		if self.settings.locations.masterLoot then
@@ -550,10 +565,10 @@ function FasterLootPlus:GetRollOffWinners()
 		table.insert(tRolls, t)
 	end
 	local results = table.sort(tRolls, function(a,b) return a.roll > b.roll end)
-	local printResults = table.sort(tPrintRolls, function(a,b) return a.roll > b.roll end)
+	local printResults = table.sort(tPrintRolls, function(a,b) return a.roll < b.roll end)
 	-- Print all rolls
 	for k,v in pairs(tPrintRolls) do
-		Utils:pprint("[FasterLootPlus]: " .. v.roller .. " - " .. v.roll)
+		Utils:pprint("[FasterLootPlus]: " .. v.roll .. " - " .. v.roller)
 	end
 	local tOutput = {}
 	if #tRolls > 0 then
