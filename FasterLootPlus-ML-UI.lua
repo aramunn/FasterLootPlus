@@ -110,8 +110,11 @@ FasterLootPlus.tItemQuality =
 ------------------------------------------------------------------------------------------------
 --- Event Handlers
 ------------------------------------------------------------------------------------------------
-function FasterLootPlus:OnLootAssigned(objItem, strLooter)
-	Event_FireGenericEvent("GenericEvent_LootChannelMessage", String_GetWeaselString(Apollo.GetString("CRB_MasterLoot_AssignMsg"), objItem:GetName(), strLooter))
+function FasterLootPlus:OnLootAssigned(tLootInfo) --objItem, strLooter) 
+	local strItem = tLootInfo.itemLoot:GetChatLinkString()
+	local nCount = tLootInfo.itemLoot:GetStackCount()
+	local strLooter = tLootInfo.strPlayer
+	Event_FireGenericEvent("GenericEvent_LootChannelMessage", String_GetWeaselString(Apollo.GetString("CRB_MasterLoot_AssignMsg"), strItem, strLooter))
 end
 
 function FasterLootPlus:DelayMasterLootWindowMoved( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
