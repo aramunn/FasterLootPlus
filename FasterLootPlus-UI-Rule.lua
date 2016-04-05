@@ -375,7 +375,7 @@ function FasterLootPlus:IncItemLevel( wndHandler, wndControl, eMouseButton )
   local str = txt:GetText()
   local value = tonumber(str)
   if value ~= nil then
-    if value < 90 then
+    if value < 150 then
       value = value + 1
     end
   else

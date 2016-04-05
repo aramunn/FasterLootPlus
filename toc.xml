@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="Chronosis" APIVersion="11" Name="FasterLootPlus" Description="Stuff" Version="0.8.5ß">
+<Addon Author="Chronosis" APIVersion="12" Name="FasterLootPlus" Description="Stuff" Version="0.8.5ß">
     <Script Name="lib/SimpleUtils/SimpleUtils.lua"/>
     <Script Name="lib/RegExpUtils/RegExpUtils.lua"/>
     <Script Name="lib/ItemHelper/ItemHelper.lua"/>

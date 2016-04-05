@@ -105,7 +105,8 @@ local tDefaultState = {
     masterLootRecipients = {},
     masterLootItems = {},
     masterLoot = {},
-    rolls = {}
+    rolls = {},
+    itemQueue = {}
   },
   timers = {
     flashUpdater = nil,
@@ -126,6 +127,7 @@ local tDefaultState = {
     isInRaid = false,
     isInDungeon = false,
     isLeader = false,
+    isLastStateInInstance = false,
     lootSetSinceLeader = false,
     currentContinent = 0,
     name = ""
@@ -391,6 +393,8 @@ function FasterLootPlus:ProcessItem(loot)
   local item = loot.itemDrop
   Event_FireGenericEvent("FasterLootPlus_ProcessLog", loot)
   for idx,rule in pairs(self.settings.ruleSets[current].lootRules) do
+    -- Add confirmed to all loot rules
+    if rule.confirmed == nil then rule.confirmed = false end
     -- Only check the rule if it is enabled
     if rule.enabled == true then
       -- Compares Item to all filter criteria
@@ -528,6 +532,7 @@ function FasterLootPlus:OnZoneChanging()
   local zoneMap = GameLib.GetCurrentZoneMap()
   if zoneMap and zoneMap.continentId then
     self.state.player.currentContinent = zoneMap.continentId
+    self.state.player.isLastStateInInstance = self.state.player.isInRaid or self.state.player.isInDungeon
     self.state.player.isInRaid = ZoneHelper:IsContinentRaid(self.state.player.currentContinent)
     self.state.player.isInDungeon = ZoneHelper:IsContinentDungeon(self.state.player.currentContinent)
   end
@@ -541,7 +546,7 @@ function FasterLootPlus:ProcessOptions()
     self.settings.user.isEnabled = true
   end
   -- Similarly if we are not in a raid or dungeon and we are set to disable on exit
-  if self.settings.options.autoDisableUponExitInstance == true and self.state.player.isInRaid == false and self.state.player.isInDungeon == false then
+  if self.settings.options.autoDisableUponExitInstance == true and self.state.player.isInRaid == false and self.state.player.isInDungeon == false and self.state.player.isLastStateInInstance == true then
     self.settings.user.isEnabled = false
   end
 

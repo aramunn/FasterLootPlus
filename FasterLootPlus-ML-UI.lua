@@ -35,7 +35,7 @@ FasterLootPlus.tClassToIcon =
 FasterLootPlus.tItemQuality =
 {
   [Item.CodeEnumItemQuality.Inferior] =
-    {
+  {
     Name			= "Inferior",
     Color			= "ItemQuality_Inferior",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Silver",
@@ -53,7 +53,7 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityWhite",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetWhite",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_White",
-   },
+	},
   [Item.CodeEnumItemQuality.Good]	=
   {
     Name			= "Good",
@@ -63,7 +63,7 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityGreen",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetGreen",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Green",
-    },
+  },
   [Item.CodeEnumItemQuality.Excellent] =
   {
     Name			= "Excellent",
@@ -75,7 +75,7 @@ FasterLootPlus.tItemQuality =
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Blue",
   },
   [Item.CodeEnumItemQuality.Superb] =
-    {
+  {
     Name			= "Superb",
     Color		   	= "ItemQuality_Superb",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Purple",
@@ -83,9 +83,9 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityPurple",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetPurple",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Purple",
-   },
+	},
   [Item.CodeEnumItemQuality.Legendary] =
-    {
+  {
     Name			= "Legendary",
     Color		   	= "ItemQuality_Legendary",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Orange",
@@ -93,9 +93,9 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityOrange",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetOrange",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Orange",
-    },
+  },
   [Item.CodeEnumItemQuality.Artifact] =
-    {
+  {
     Name			= "Artifact",
     Color		   	= "ItemQuality_Artifact",
     BarSprite	   	= "CRB_Tooltips:sprTooltip_RarityBar_Pink",
@@ -103,19 +103,30 @@ FasterLootPlus.tItemQuality =
     SquareSprite	= "BK3:UI_BK3_ItemQualityMagenta",
     CompactIcon	 	= "CRB_TooltipSprites:sprTT_HeaderInsetPink",
     NotifyBorder	= "ItemQualityBrackets:sprItemQualityBracket_Pink",
-  },
+  }
 }
 
 
 ------------------------------------------------------------------------------------------------
 --- Event Handlers
 ------------------------------------------------------------------------------------------------
-function FasterLootPlus:OnLootAssigned(objItem, strLooter)
-	Event_FireGenericEvent("GenericEvent_LootChannelMessage", String_GetWeaselString(Apollo.GetString("CRB_MasterLoot_AssignMsg"), objItem:GetName(), strLooter))
+function FasterLootPlus:OnLootAssigned(tLootInfo) --objItem, strLooter)
+	local strItem = tLootInfo.itemLoot:GetChatLinkString()
+	local nCount = tLootInfo.itemLoot:GetStackCount()
+	local strLooter = tLootInfo.strPlayer
+	Event_FireGenericEvent("GenericEvent_LootChannelMessage", String_GetWeaselString(Apollo.GetString("CRB_MasterLoot_AssignMsg"), strItem, strLooter))
 end
 
 function FasterLootPlus:DelayMasterLootWindowMoved( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
 	self.settings.locations.delayedMasterLoot = self.state.windows.delayedMasterLoot:GetLocation():ToTable()
+end
+
+function FasterLootPlus:OnMasterLooterWindowMoved( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
+	self.settings.locations.masterLooter = self.state.windows.masterLoot:GetLocation():ToTable()
+end
+
+function FasterLootPlus:OnMasterLootWindowMoved( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
+	self.settings.locations.masterLoot = self.state.windows.masterLoot:GetLocation():ToTable()
 end
 
 function FasterLootPlus:OnDelayedMasterLootOpen( wndHandler, wndControl, eMouseButton )
@@ -173,7 +184,10 @@ end
 
 function FasterLootPlus:OnMLLooterSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
 	if wndHandler then
-		local unitLooter = wndHandler:GetData()
+		local data = wndHandler:GetData()
+		local unitLooter = data.looter
+		local lootType = data.type
+		local class = data.classID
 		-- Alter Background of this and change background of previous selection
 		if self.state.selection.masterLootRecipients then
 			self.state.selection.masterLootRecipients:SetSprite("BK3:btnHolo_ListView_SimpleNormal")
@@ -181,10 +195,12 @@ function FasterLootPlus:OnMLLooterSelected( wndHandler, wndControl, eMouseButton
 		wndHandler:SetSprite("BK3:btnHolo_ListView_SimplePressed")
 		-- Set selection value
 		self.state.selection.masterLootRecipients = wndHandler
-		if unitLooter == -1 then
+		if lootType == -1 then
 			self.state.selection.masterLootRecipientsId = " - Random - "
-		elseif unitLooter == -2 then
+		elseif lootType == -2 then
 			self.state.selection.masterLootRecipientsId = " - Initiate Roll-off - "
+		elseif lootType == 0 then
+			-- Out of Range Character
 		else
 			self.state.selection.masterLootRecipientsId = unitLooter:GetName()
 		end
@@ -198,9 +214,12 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 	end
 	local loot = self.state.selection.masterLootItem:GetData()
 	local item = loot.itemDrop
-	local unitLooter = self.state.selection.masterLootRecipients:GetData()
+	local data = self.state.selection.masterLootRecipients:GetData()
+	local unitLooter = data.looter
+	local class = data.classID
+	local lootType = data.type
 	-- Perform actual assignment based on selections
-	if unitLooter == -2 then
+	if lootType == -2 then
 		if self.state.isRollOffActive then
 			Utils:cprint("[FasterLootPlus] Error: You can not start another roll-off while one is still active.")
 			return
@@ -218,7 +237,7 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 		Utils:pprint("[FasterLootPlus]: /rolling for Item " .. itemLink)
 		Utils:pprint("[FasterLootPlus]: Closing rolls in " .. self.settings.user.rollTime .. "s")
 		Utils:pprint("==============================")
-	elseif unitLooter == -1 then
+	elseif lootType == -1 then
 		-- if random assign randomly
 		local validLooter = false
 		local looter
@@ -230,6 +249,8 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 		self.state.selection.masterLootItem = nil
 		self.state.selection.masterLootRecipients = nil
 		return
+	elseif lootType == 0 then
+		-- Do nothing cause this is OOR
 	else
 		local name = unitLooter:GetName()
 		if self.state.listItems.validLooters[name] then
@@ -255,7 +276,8 @@ function FasterLootPlus:OnRollOffEnd()
 		local winner = winners.rollers[1]
 		Utils:pprint("[FasterLootPlus]: " .. winner .. " wins with a roll of " .. winners.roll .. "!")
 		-- look up user and assign loot
-		local looter = self.state.listItems.masterLootRecipients[winner]:GetData()
+		local data = self.state.listItems.masterLootRecipients[winner]:GetData()
+		local looter = data.looter
 		self:AssignLoot(loot.nLootId, looter, item, "Roll-off")
 	elseif winners.result == "tie" then
 		 local strRollers = ""
@@ -324,8 +346,12 @@ end
 --- Master Loot Logic
 ------------------------------------------------------------------------------------------------
 function FasterLootPlus:OpenMLWindow()
+	local nVPos = nil
 	-- Make sure no ML window is open
 	if self.state.windows.masterLoot then
+		if self.state.windows.masterLootRecipients ~= nil then
+			nVPos = self.state.windows.masterLootRecipients:GetVScrollPos()
+		end
 		self:CloseMLWindow()
 	end
 
@@ -338,6 +364,9 @@ function FasterLootPlus:OpenMLWindow()
 		end
 		self.state.windows.masterLootItems = self.state.windows.masterLoot:FindChild("ItemList")
 		self.state.windows.masterLootRecipients = self.state.windows.masterLoot:FindChild("LooterList")
+		if nVPos ~= nil then
+			self.state.windows.masterLootRecipients:SetVScrollPos(nVPos)
+		end
 	else
 		self.state.windows.masterLoot = Apollo.LoadForm(self.xmlDoc, "MasterLootWindow", nil, self)
 		if self.settings.locations.masterLoot then
@@ -492,17 +521,18 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 	self:EmptyMLLooterLists()
 	local wnd
 	wnd = self:AddMLLooter(" - Random - ", -1, nil)
-	wnd:SetData(-1)
+	wnd:SetData({looter = "Random", type = -1, classID = -1, level = nil})
 
 	wnd = self:AddMLLooter(" - Initiate Roll-off - ", -2, nil)
-	wnd:SetData(-2)
+	wnd:SetData({looter = "Roll-Off", type = -2, classID = -2, level = nil})
 
 	for idx, unitLooter in pairs(item.tLooters) do
 		local name = unitLooter:GetName()
 		local class = unitLooter:GetClassId()
 		local level = unitLooter:GetBasicStats().nLevel
 		local wnd = self:AddMLLooter(name, class, level)
-		wnd:SetData(unitLooter)
+		wnd:SetData({looter = unitLooter, type = 1, classID = class, level = level})
+		--wnd:SetData(unitLooter)
 	end
 
 	-- Check Range
@@ -513,6 +543,7 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 			local name = String_GetWeaselString(Apollo.GetString("Group_OutOfRange"), strLooterOOR)
 			if not wnd then
 				wnd = self:AddMLLooter(name, 0, nil)
+				wnd:SetData({looter = strLooterOOR, type = 0, classID = 0, level = nil})
 			end
 			wnd:FindChild("ClassBorder"):FindChild("ClassIcon"):SetSprite("CRB_GroupFrame:sprGroup_Disconnected")
 			wnd:FindChild("LooterName"):SetText(name)
@@ -548,10 +579,10 @@ function FasterLootPlus:GetRollOffWinners()
 		table.insert(tRolls, t)
 	end
 	local results = table.sort(tRolls, function(a,b) return a.roll > b.roll end)
-	local printResults = table.sort(tPrintRolls, function(a,b) return a.roll > b.roll end)
+	local printResults = table.sort(tPrintRolls, function(a,b) return a.roll < b.roll end)
 	-- Print all rolls
 	for k,v in pairs(tPrintRolls) do
-		Utils:pprint("[FasterLootPlus]: " .. v.roller .. " - " .. v.roll)
+		Utils:pprint("[FasterLootPlus]: " .. v.roll .. " - " .. v.roller)
 	end
 	local tOutput = {}
 	if #tRolls > 0 then
