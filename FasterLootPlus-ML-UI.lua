@@ -110,7 +110,7 @@ FasterLootPlus.tItemQuality =
 ------------------------------------------------------------------------------------------------
 --- Event Handlers
 ------------------------------------------------------------------------------------------------
-function FasterLootPlus:OnLootAssigned(tLootInfo) --objItem, strLooter) 
+function FasterLootPlus:OnLootAssigned(tLootInfo) --objItem, strLooter)
 	local strItem = tLootInfo.itemLoot:GetChatLinkString()
 	local nCount = tLootInfo.itemLoot:GetStackCount()
 	local strLooter = tLootInfo.strPlayer
@@ -184,7 +184,10 @@ end
 
 function FasterLootPlus:OnMLLooterSelected( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
 	if wndHandler then
-		local unitLooter = wndHandler:GetData()
+		local data = wndHandler:GetData()
+		local unitLooter = data.looter
+		local lootType = data.type
+		local class = data.classID
 		-- Alter Background of this and change background of previous selection
 		if self.state.selection.masterLootRecipients then
 			self.state.selection.masterLootRecipients:SetSprite("BK3:btnHolo_ListView_SimpleNormal")
@@ -192,12 +195,12 @@ function FasterLootPlus:OnMLLooterSelected( wndHandler, wndControl, eMouseButton
 		wndHandler:SetSprite("BK3:btnHolo_ListView_SimplePressed")
 		-- Set selection value
 		self.state.selection.masterLootRecipients = wndHandler
-		if unitLooter == -1 then
+		if lootType == -1 then
 			self.state.selection.masterLootRecipientsId = " - Random - "
-		elseif unitLooter == -2 then
+		elseif lootType == -2 then
 			self.state.selection.masterLootRecipientsId = " - Initiate Roll-off - "
-		elseif unitLooter == 0 then
-			--self.state.selection.masterLootRecipientsId = " - Initiate Roll-off - "
+		elseif lootType == 0 then
+			-- Out of Range Character
 		else
 			self.state.selection.masterLootRecipientsId = unitLooter:GetName()
 		end
@@ -211,9 +214,12 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 	end
 	local loot = self.state.selection.masterLootItem:GetData()
 	local item = loot.itemDrop
-	local unitLooter = self.state.selection.masterLootRecipients:GetData()
+	local data = self.state.selection.masterLootRecipients:GetData()
+	local unitLooter = data.looter
+	local class = data.classID
+	local lootType = data.type
 	-- Perform actual assignment based on selections
-	if unitLooter == -2 then
+	if lootType == -2 then
 		if self.state.isRollOffActive then
 			Utils:cprint("[FasterLootPlus] Error: You can not start another roll-off while one is still active.")
 			return
@@ -231,7 +237,7 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 		Utils:pprint("[FasterLootPlus]: /rolling for Item " .. itemLink)
 		Utils:pprint("[FasterLootPlus]: Closing rolls in " .. self.settings.user.rollTime .. "s")
 		Utils:pprint("==============================")
-	elseif unitLooter == -1 then
+	elseif lootType == -1 then
 		-- if random assign randomly
 		local validLooter = false
 		local looter
@@ -243,6 +249,8 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 		self.state.selection.masterLootItem = nil
 		self.state.selection.masterLootRecipients = nil
 		return
+	elseif lootType == 0 then
+		-- Do nothing cause this is OOR
 	else
 		local name = unitLooter:GetName()
 		if self.state.listItems.validLooters[name] then
@@ -268,7 +276,8 @@ function FasterLootPlus:OnRollOffEnd()
 		local winner = winners.rollers[1]
 		Utils:pprint("[FasterLootPlus]: " .. winner .. " wins with a roll of " .. winners.roll .. "!")
 		-- look up user and assign loot
-		local looter = self.state.listItems.masterLootRecipients[winner]:GetData()
+		local data = self.state.listItems.masterLootRecipients[winner]:GetData()
+		local looter = data.looter
 		self:AssignLoot(loot.nLootId, looter, item, "Roll-off")
 	elseif winners.result == "tie" then
 		 local strRollers = ""
@@ -512,17 +521,18 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 	self:EmptyMLLooterLists()
 	local wnd
 	wnd = self:AddMLLooter(" - Random - ", -1, nil)
-	wnd:SetData(-1)
+	wnd:SetData({looter = "Random", type = -1, classID = -1, level = nil})
 
 	wnd = self:AddMLLooter(" - Initiate Roll-off - ", -2, nil)
-	wnd:SetData(-2)
+	wnd:SetData({looter = "Roll-Off", type = -2, classID = -2, level = nil})
 
 	for idx, unitLooter in pairs(item.tLooters) do
 		local name = unitLooter:GetName()
 		local class = unitLooter:GetClassId()
 		local level = unitLooter:GetBasicStats().nLevel
 		local wnd = self:AddMLLooter(name, class, level)
-		wnd:SetData(unitLooter)
+		wnd:SetData({looter = unitLooter, type = 1, classID = class, level = level})
+		--wnd:SetData(unitLooter)
 	end
 
 	-- Check Range
@@ -533,6 +543,7 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 			local name = String_GetWeaselString(Apollo.GetString("Group_OutOfRange"), strLooterOOR)
 			if not wnd then
 				wnd = self:AddMLLooter(name, 0, nil)
+				wnd:SetData({looter = strLooterOOR, type = 0, classID = 0, level = nil})
 			end
 			wnd:FindChild("ClassBorder"):FindChild("ClassIcon"):SetSprite("CRB_GroupFrame:sprGroup_Disconnected")
 			wnd:FindChild("LooterName"):SetText(name)
