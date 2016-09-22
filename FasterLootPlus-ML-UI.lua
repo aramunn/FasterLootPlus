@@ -542,7 +542,7 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 			local wnd = self.state.listItems.masterLootRecipients[strLooterOOR]
 			local name = String_GetWeaselString(Apollo.GetString("Group_OutOfRange"), strLooterOOR)
 			if not wnd then
-				wnd = self:AddMLLooter(name, 0, nil)
+				wnd = self:AddMLLooter(strLooterOOR, 0, nil)
 				wnd:SetData({looter = strLooterOOR, type = 0, classID = 0, level = nil})
 			end
 			wnd:FindChild("ClassBorder"):FindChild("ClassIcon"):SetSprite("CRB_GroupFrame:sprGroup_Disconnected")
