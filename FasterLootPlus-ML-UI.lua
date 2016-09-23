@@ -226,7 +226,9 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 		end
 		if not self.settings.user.rollTime then self.settings.user.rollTime = 12 end
 		-- Start Roll-off Time
+		self.state.listItems.trashRolls = {}
 		self.state.listItems.rolls = {}
+		self.state.listItems.needRolls = {}
 		self.state.isRollOffActive = true
 		self.state.timers.rollOff = ApolloTimer.Create(self.settings.user.rollTime, false, "OnRollOffEnd", self)
 		-- Save Roll-off Item
@@ -271,7 +273,7 @@ function FasterLootPlus:OnRollOffEnd()
 	local itemLink = item:GetChatLinkString()
 	Utils:pprint("[FasterLootPlus]: Rolls are now closed for " .. itemLink)
 	-- Check all rolls
-	local winners = self:GetRollOffWinners()
+	local winners = self:FindRollOffWinners()
 	if winners.result == "win" then
 		local winner = winners.rollers[1]
 		Utils:pprint("[FasterLootPlus]: " .. winner .. " wins with a roll of " .. winners.roll .. "!")
@@ -328,6 +330,13 @@ function FasterLootPlus:OnChatMessage(tChannel, tEventArgs)
 			Event_FireGenericEvent("PlayerRoll", t)
 		end
 	end
+	if tChannel:GetType() == ChatSystemLib.ChatChannel_Party then
+		local message = tEventArgs.arMessageSegments[1].strText
+		message = string.lower(string.gsub(message, " ", ""))
+		if message == "x" then
+			self.state.listItems.needRolls[tEventArgs.strSender] = "x"
+		end
+	end
 end
 
 function FasterLootPlus:OnPlayerRoll(tEventArgs)
@@ -338,6 +347,13 @@ function FasterLootPlus:OnPlayerRoll(tEventArgs)
 			-- Only record first roll for the player
 			if not self.state.listItems.rolls[tEventArgs.player] then
 				self.state.listItems.rolls[tEventArgs.player] = tEventArgs.roll
+			end
+		end
+		-- Record trash rolls too
+		if tEventArgs.range.low == 1 and tEventArgs.range.high == 50 then
+			-- Only record first roll for the player
+			if not self.state.listItems.trashRolls[tEventArgs.player] then
+				self.state.listItems.trashRolls[tEventArgs.player] = tEventArgs.roll
 			end
 		end
 	end
@@ -563,12 +579,26 @@ function FasterLootPlus:PopulateMLLooterLists(item)
 	end
 end
 
-function FasterLootPlus:GetRollOffWinners()
+function FasterLootPlus:FindRollOffWinners()
+  local tResults
+  local arrRollsToCheck = {
+    self.state.listItems.needRolls,
+    self.state.listItems.rolls,
+    self.state.listItems.trashRolls,
+  }
+  for idx, tRolls in ipairs(arrRollsToCheck) do
+    tResults = self:GetRollOffWinners(tRolls)
+    if tResults.result ~= "none" then return tResults end
+  end
+  return tResults
+end
+
+function FasterLootPlus:GetRollOffWinners(tRollsToCheck)
 	local tRolls = {}
 	local tPrintRolls = {}
 	local tValues = {}
 	-- put all pairs into a table of values
-	for k,v in pairs(self.state.listItems.rolls) do
+	for k,v in pairs(tRollsToCheck) do
 		if not tValues[v] then tValues[v] = {} end
 		table.insert(tValues[v], k)
 		table.insert(tPrintRolls, { roll = v, roller = k })

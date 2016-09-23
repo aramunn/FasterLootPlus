@@ -105,7 +105,9 @@ local tDefaultState = {
     masterLootRecipients = {},
     masterLootItems = {},
     masterLoot = {},
+    trashRolls = {},
     rolls = {},
+    needRolls = {},
     itemQueue = {}
   },
   timers = {
