@@ -133,6 +133,7 @@ local tDefaultState = {
     name = ""
   },
   currentAssignees = {}, -- List of current Assignees for the item
+  assignedLoot = {},
 }
 
 -----------------------------------------------------------------------------------------------
@@ -288,12 +289,18 @@ function FasterLootPlus:AssignLoot(id, looter, item, mode)
   local strAlert = "Assigning {item} to {user} ({mode})"
   local itemLink = item:GetChatLinkString()
   local itemName = item:GetName()
-  local looterName = looter.GetName and looter:GetName() or tostring(looter).." (out of range)"
+  local bIsInRange = looter.GetName ~= nil
+  local looterName = bIsInRange and looter:GetName() or tostring(looter).." (out of range)"
   local strDB = string.gsub(string.gsub(string.gsub(strAlert,"{item}", itemName), "{user}", looterName), "{mode}", mode)
   local strParty = string.gsub(string.gsub(string.gsub(strAlert,"{item}", itemLink), "{user}", looterName), "{mode}", mode)
   self:PrintDB(strDB)
   self:PrintParty(strParty)
-  GameLib.AssignMasterLoot(id, looter)
+  if bIsInRange then
+    GameLib.AssignMasterLoot(id, looter)
+  else
+    self.state.assignedLoot[id] = tostring(looter)
+    Print(tostring(looter).." is out of range. Queueing "..itemName.." for later.")
+  end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -319,6 +326,19 @@ function FasterLootPlus:OnMasterLootUpdate(bForceOpen)
       self:ProcessItem(tCurMasterLoot)
     end
     self.state.isProcessingActive = false
+  end
+  
+  for idxMasterItem, tLoot in pairs(self.state.listItems.masterLoot) do
+    if self.state.assignedLoot[tLoot.nLootId] then
+      local strNeedsItem = self.state.assignedLoot[tLoot.nLootId]
+      for idx, unitLooter in pairs(tLoot.tLooters) do
+        if unitLooter:GetName() == strNeedsItem then
+          Print(strNeedsItem.." is in range now. Assigning "..itemDrop:GetName().." to them now. ")
+          GameLib.AssignMasterLoot(tLoot.nLootId, unitLooter)
+          self.state.assignedLoot[tLoot.nLootId] = nil
+        end
+      end
+    end
   end
 
   self:RefreshMLWindow()
