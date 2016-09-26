@@ -333,7 +333,7 @@ function FasterLootPlus:OnMasterLootUpdate(bForceOpen)
       local strNeedsItem = self.state.assignedLoot[tLoot.nLootId]
       for idx, unitLooter in pairs(tLoot.tLooters) do
         if unitLooter:GetName() == strNeedsItem then
-          Print(strNeedsItem.." is in range now. Assigning "..itemDrop:GetName().." to them now. ")
+          Print(strNeedsItem.." is in range now. Assigning "..tLoot.itemDrop:GetName())
           GameLib.AssignMasterLoot(tLoot.nLootId, unitLooter)
           self.state.assignedLoot[tLoot.nLootId] = nil
         end
