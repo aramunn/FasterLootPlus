@@ -37,6 +37,8 @@ function FasterLootPlus:OnConfigure()
     self.state.windows.options:FindChild("ThresholdSelection"):SetData(self.settings.options.masterLootQualityThreshold)
     self.state.windows.options:FindChild("ThresholdSelection"):SetText(self.tItemQuality[self.settings.options.masterLootQualityThreshold].Name)
     self.state.windows.options:FindChild("ThresholdSelection"):SetNormalTextColor(ApolloColor.new(self.tItemQuality[self.settings.options.masterLootQualityThreshold].Color))
+    self.state.windows.options:FindChild("RollOffTimeoutEntry"):SetText(tostring(self.settings.user.rollTime))
+    self.state.windows.options:FindChild("RollOffTimeoutEntry"):SetPrompt(tostring(self.settings.user.rollTime))
 
     self.state.windows.options:Show(true)
   end
@@ -57,6 +59,7 @@ function FasterLootPlus:OnOptionsSave( wndHandler, wndControl, eMouseButton )
   self.settings.options.autoDisableUponExitInstance = self.state.windows.options:FindChild("AutoDisableButton"):IsChecked()
   self.settings.options.masterLootRule  = self.state.windows.options:FindChild("PartyLootRuleSelection"):GetData()
   self.settings.options.masterLootQualityThreshold = self.state.windows.options:FindChild("ThresholdSelection"):GetData()
+  self.settings.user.rollTime = self.tmpRollTime
   self:CloseOptions()
   -- Update addon state based on new settings
   self.state.player.lootSetSinceLeader = false
