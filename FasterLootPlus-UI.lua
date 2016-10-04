@@ -78,6 +78,20 @@ function FasterLootPlus:OnEnableUnchecked( wndHandler, wndControl, eMouseButton 
   self.settings.user.isEnabled = false
 end
 
+function FasterLootPlus:OnRollOffTimeoutChanged(wndHandler, wndControl, strText)
+  self.tmpRollTime = self.settings.user.rollTime
+  if strText == "" then return end
+  local nCursor = wndControl:GetSel().cpEnd
+  local nValue = tonumber(strText)
+  if nValue and nValue > 0 then
+    self.tmpRollTime = nValue
+  else
+    nCursor = nCursor - 1
+  end
+  wndControl:SetText(tostring(self.tmpRollTime))
+  wndControl:SetSel(nCursor, nCursor)
+end
+
 function FasterLootPlus:OnClearLootRules( wndHandler, wndControl, eMouseButton )
   self.state.windows.confirmClearRules = Apollo.LoadForm(self.xmlDoc, "ConfirmClearRulesWindow", nil, self)
 end
