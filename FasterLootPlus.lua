@@ -69,6 +69,7 @@ local tDefaultState = {
   isMasterLootOpen = false,
   isFlashShown = false,
   isRollOffActive = false,
+  isTiedRollOff = false,
   isProcessingActive = false,
   windows = {           -- These store windows for lists
     main = nil,
@@ -106,6 +107,7 @@ local tDefaultState = {
     masterLootItems = {},
     masterLoot = {},
     rolls = {},
+    tiedRollers = {},
     itemQueue = {}
   },
   timers = {

@@ -228,6 +228,7 @@ function FasterLootPlus:OnMLAssign( wndHandler, wndControl, eMouseButton )
 		-- Start Roll-off Time
 		self.state.listItems.rolls = {}
 		self.state.isRollOffActive = true
+		self.state.isTiedRollOff = false
 		self.state.timers.rollOff = ApolloTimer.Create(self.settings.user.rollTime, false, "OnRollOffEnd", self)
 		-- Save Roll-off Item
 		self.state.rollOffItem = loot
@@ -264,8 +265,6 @@ end
 
 function FasterLootPlus:OnRollOffEnd()
 	self.state.isRollOffActive = false
-	self.state.timers.rollOff:Stop()
-	self.state.timers.rollOff = nil
 	local loot = self.state.rollOffItem
 	local item = loot.itemDrop
 	local itemLink = item:GetChatLinkString()
@@ -275,15 +274,24 @@ function FasterLootPlus:OnRollOffEnd()
 	if winners.result == "win" then
 		local winner = winners.rollers[1]
 		Utils:pprint("[FasterLootPlus]: " .. winner .. " wins with a roll of " .. winners.roll .. "!")
-		self:AssignLoot(loot.nLootId, winner, item, "Roll-off")
+		-- look up user and assign loot
+		local data = self.state.listItems.masterLootRecipients[winner]:GetData()
+		local looter = data and data.looter or winner
+		self:AssignLoot(loot.nLootId, looter, item, "Roll-off")
 	elseif winners.result == "tie" then
+		 self.state.listItems.tiedRollers = {}
 		 local strRollers = ""
 		 local c = 0
 		for k,v in pairs( winners.rollers ) do
 			if c ~= 0 then strRollers = strRollers .. ", " end
 			strRollers = strRollers .. v
 			c = c + 1
+			self.state.listItems.tiedRollers[v] = true
 		end
+		self.state.nTiedRollersCount = c
+		self.state.listItems.rolls = {}
+		self.state.isTiedRollOff = true
+		self.state.isRollOffActive = true
 		Utils:pprint("[FasterLootPlus]: " .. strRollers .. " tied with a winning roll of " .. winners.roll .. "!")
 		Utils:pprint("[FasterLootPlus]: Please /roll to break the tie")
 	elseif winners.result == "none" then
@@ -330,11 +338,17 @@ end
 function FasterLootPlus:OnPlayerRoll(tEventArgs)
 	-- Only record rolls if roll is active
 	if self.state.isRollOffActive then
+		-- Skip if in tied roll off and not a valid player
+		if self.state.isTiedRollOff and not self.state.listItems.tiedRollers[tEventArgs.player] then return end
 		-- Only record roll if it's 1 to 100
 		if tEventArgs.range.low == 1 and tEventArgs.range.high == 100 then
 			-- Only record first roll for the player
 			if not self.state.listItems.rolls[tEventArgs.player] then
 				self.state.listItems.rolls[tEventArgs.player] = tEventArgs.roll
+				if self.state.isTiedRollOff then
+					self.state.nTiedRollersCount = self.state.nTiedRollersCount - 1
+					if self.state.nTiedRollersCount <= 0 then self:OnRollOffEnd() end
+				end
 			end
 		end
 	end
