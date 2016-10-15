@@ -290,12 +290,16 @@ function FasterLootPlus:OnRollOffEnd()
 			c = c + 1
 			self.state.listItems.tiedRollers[v] = true
 		end
-		self.state.nTiedRollersCount = c
-		self.state.listItems.rolls = {}
-		self.state.isTiedRollOff = true
-		self.state.isRollOffActive = true
 		Utils:pprint("[FasterLootPlus]: " .. strRollers .. " tied with a winning roll of " .. winners.roll .. "!")
-		Utils:pprint("[FasterLootPlus]: Please /roll to break the tie")
+		if string.lower(winners.roll) ~= "x" then
+			self.state.nTiedRollersCount = c
+			self.state.listItems.rolls = {}
+			self.state.isTiedRollOff = true
+			self.state.isRollOffActive = true
+			Utils:pprint("[FasterLootPlus]: Please /roll to break the tie")
+		else
+			Utils:pprint("[FasterLootPlus]: Please determine who has the most DKP")
+		end
 	elseif winners.result == "none" then
 		Utils:pprint("[FasterLootPlus]: No rolls recorded.")
 	end
@@ -592,19 +596,22 @@ end
 
 function FasterLootPlus:FindRollOffWinners()
   local tResults
-  local arrRollsToCheck
+  local arRollsToCheck
   if self.state.isTiedRollOff then
-    arrRollsToCheck = { self.state.listItems.rolls }
+    arRollsToCheck = {
+      { "Tied Roll-off", self.state.listItems.rolls }
+    }
   else
-    arrRollsToCheck = {
-      self.state.listItems.needRolls,
-      self.state.listItems.rolls,
-      self.state.listItems.trashRolls,
+    arRollsToCheck = {
+      { "Trash",    self.state.listItems.trashRolls },
+      { "Offspec",  self.state.listItems.rolls      },
+      { "DKP",      self.state.listItems.needRolls  },
     }
   end
-  for idx, tRolls in ipairs(arrRollsToCheck) do
-    tResults = self:GetRollOffWinners(tRolls)
-    if tResults.result ~= "none" then return tResults end
+  for idx, arRollInfo in ipairs(arRollsToCheck) do
+    Utils:pprint("[FasterLootPlus]: "..arRollInfo[1].." Rolls Recorded:")
+    local tTmpResults = self:GetRollOffWinners(arRollInfo[2])
+    if not tResults or tTmpResults.result ~= "none" then tResults = tTmpResults end
   end
   return tResults
 end
@@ -628,7 +635,7 @@ function FasterLootPlus:GetRollOffWinners(tRollsToCheck)
 	local printResults = table.sort(tPrintRolls, function(a,b) return a.roll < b.roll end)
 	-- Print all rolls
 	for k,v in pairs(tPrintRolls) do
-		Utils:pprint("[FasterLootPlus]: " .. v.roll .. " - " .. v.roller)
+		Utils:pprint("[FasterLootPlus]:   " .. v.roll .. " - " .. v.roller)
 	end
 	local tOutput = {}
 	if #tRolls > 0 then
