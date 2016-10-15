@@ -275,10 +275,7 @@ function FasterLootPlus:OnRollOffEnd()
 	if winners.result == "win" then
 		local winner = winners.rollers[1]
 		Utils:pprint("[FasterLootPlus]: " .. winner .. " wins with a roll of " .. winners.roll .. "!")
-		-- look up user and assign loot
-		local data = self.state.listItems.masterLootRecipients[winner]:GetData()
-		local looter = data.looter
-		self:AssignLoot(loot.nLootId, looter, item, "Roll-off")
+		self:AssignLoot(loot.nLootId, winner, item, "Roll-off")
 	elseif winners.result == "tie" then
 		 local strRollers = ""
 		 local c = 0
